@@ -155,7 +155,6 @@ body::before{
 .bdot{width:5px;height:5px;border-radius:50%;background:var(--tx3)}
 .bdot.g{background:var(--gr)}.bdot.o{background:var(--or)}
 
-/* ═══ KAPOWWSS RETURN PAGE STYLES ═══ */
 .kapowwss-page{display:none;text-align:center;padding:20px 0}
 .kapowwss-page.show{display:block}
 .kapowwss-icon{font-size:56px;margin-bottom:16px}
@@ -211,7 +210,6 @@ body::before{
   <div class="card">
     <div class="status" id="status"></div>
 
-    <!-- ═══ MAIN PAGE CONTENT ═══ -->
     <div id="mainPage">
       <div class="timer-bar" id="timerBar">
         <div class="timer-label">⏱ Hết hạn trong</div>
@@ -272,7 +270,6 @@ body::before{
       </div>
     </div>
 
-    <!-- ═══ KAPOWWSS RETURN PAGE CONTENT ═══ -->
     <div class="kapowwss-page" id="kapowPage">
       <div class="kapowwss-icon" id="kapowIcon">⏳</div>
       <div class="kapowwss-title" id="kapowTitle">Đang xử lý...</div>
@@ -285,14 +282,13 @@ body::before{
     </div>
   </div>
 
-  <div class="footer">Free Fire Key System v5.3 · Anti-Bypass · Powered by Link4M</div>
+  <div class="footer">Free Fire Key System v5.4 · Always Fresh Link & Key · Powered by Link4M</div>
 </div>
 
 <script>
 const CFG = {
   API_TOKEN  : '687f718ea1faab07844af330',
-  // URL GỐC ĐỂ RÚT GỌN — chứa hash #kapowwss để phân biệt trang cấp key
-  RETURN_URL : 'https://lch04122009-rgb.github.io/keyvip/#kapowwss',
+  BASE_URL   : 'https://lch04122009-rgb.github.io/keyvip/',
   SECRET     : 'FF_KEY_2026_SECRET',
   KEY_LEN    : 18,
   KEY_CHARS  : 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
@@ -311,9 +307,13 @@ function getDeviceID(){
   return h.toString(16).toUpperCase().padStart(8,'0');
 }
 
-/* ═══ KEY GEN ═══ */
+/* ═══ KEY GEN — luôn tạo key MỚI mỗi lần gọi ═══
+   Thêm nonce (random) vào seed để mỗi lần generate ra key khác nhau
+   dù cùng device và cùng ngày. */
 async function genKey(did){
-  const seed=CFG.SECRET+'|'+did+'|'+new Date().toISOString().slice(0,10);
+  const nonce=Array.from(crypto.getRandomValues(new Uint8Array(8)))
+    .map(b=>b.toString(16).padStart(2,'0')).join('');
+  const seed=CFG.SECRET+'|'+did+'|'+Date.now()+'|'+nonce;
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(seed));
   const arr=Array.from(new Uint8Array(buf));
   return Array.from({length:CFG.KEY_LEN},(_,i)=>CFG.KEY_CHARS[arr[i]%CFG.KEY_CHARS.length]).join('');
@@ -346,22 +346,40 @@ function setStatus(type,msg){
 }
 function clearStatus(){document.getElementById('status').className='status';}
 
-/* ═══ LINK4M API ═══ */
-async function createShortLink(destUrl){
-  // Thêm timestamp để tránh cache của API
-  const url=`https://link4m.co/api-shorten/v2?api=${CFG.API_TOKEN}&url=${encodeURIComponent(destUrl)}&_t=${Date.now()}`;
+/* ═══ LINK4M API ═══
+   Mỗi lần gọi đều tạo URL destination MỚI bằng cách thêm:
+   - _t=timestamp (milliseconds)
+   - _r=random string
+   → Link4M API sẽ coi là URL khác nhau → trả về short link MỚI.
+   Không bao giờ reuse link cũ. */
+async function createShortLink(){
+  // Tạo unique nonce cho destination URL
+  const nonce=Array.from(crypto.getRandomValues(new Uint8Array(6)))
+    .map(b=>b.toString(36)).join('');
+  const ts=Date.now();
+
+  // URL destination: BASE_URL + #kapowwss + unique params
+  // Lưu ý: hash fragment (#) không gửi tới server, nhưng ta dùng query params
+  // trước hash để Link4M thấy URL khác nhau.
+  // Format: BASE_URL?_t=xxx&_r=yyy#kapowwss
+  const destUrl=`${CFG.BASE_URL}?_t=${ts}&_r=${nonce}#kapowwss`;
+
+  const apiUrl=`https://link4m.co/api-shorten/v2?api=${CFG.API_TOKEN}&url=${encodeURIComponent(destUrl)}`;
+
   try{
-    const r=await fetch(url,{method:'GET',cache:'no-store'});
+    const r=await fetch(apiUrl,{method:'GET',cache:'no-store'});
     if(r.ok){
       const d=await r.json();
       const link=d.shortenedUrl||d.short_link||d.url||(d.status==='success'&&d.data?.url)||null;
       if(link)return link;
       throw new Error(d.message||d.error||'API không trả link');
     }
+    throw new Error('API trả về lỗi HTTP '+r.status);
   }catch(e){
+    // Fallback qua proxy nếu CORS
     const proxies=[
-      `https://corsproxy.io/?url=${encodeURIComponent(url)}&_t=${Date.now()}`,
-      `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&_t=${Date.now()}`,
+      `https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`,
+      `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`,
     ];
     for(const proxy of proxies){
       try{
@@ -379,26 +397,32 @@ async function createShortLink(destUrl){
 }
 
 /* ══════════════════════════════════════════
-   ║  MAIN PAGE LOGIC (không có hash)      ║
-   ║  → Chỉ hiển thị UI, KHÔNG cấp key     ║
+   ║  MAIN PAGE LOGIC                      ║
    ╚═════════════════════════════════════════ */
 
 async function startFlow(){
   const btn=document.getElementById('btnGet');
   btn.disabled=true;
-  btn.innerHTML='⏳ Đang tạo link...';
-  setStatus('loading','Đang tạo link xác minh mới...');
+  btn.innerHTML='⏳ Đang gọi API tạo link mới...';
+  setStatus('loading','Đang tạo link xác minh MỚI từ API...');
 
   try{
-    // Luôn tạo token + link MỚI mỗi lần bấm
+    // Xóa sạch trạng thái cũ
+    LS.del('ff_key');
+    LS.del('ff_tok');
+    LS.del('ff_tok_ts');
+    LS.del('ff_short');
+
+    // Tạo token mới
     const tok=Array.from(crypto.getRandomValues(new Uint8Array(20)))
       .map(b=>b.toString(16).padStart(2,'0')).join('');
     LS.set('ff_tok',tok);
     LS.set('ff_tok_ts',String(Date.now()));
-    LS.del('ff_key'); // Xóa key cũ để đảm bảo fresh
 
-    // Gọi API tạo link MỚI mỗi lần
-    const shortLink=await createShortLink(CFG.RETURN_URL);
+    // ★★★ GỌI API TẠO LINK MỚI MỖI LẦN ★★★
+    // Hàm createShortLink() luôn thêm timestamp + nonce vào URL
+    // → Link4M trả về short link hoàn toàn mới
+    const shortLink=await createShortLink();
     LS.set('ff_short',shortLink);
 
     showLinkBox(shortLink);
@@ -422,7 +446,7 @@ function showLinkBox(link){
   document.getElementById('linkOpenBtn').href=link;
   lb.classList.add('show');
 
-  setStatus('info','Bấm nút để mở link xác minh bên dưới ↓');
+  setStatus('info','Link MỚI đã được tạo. Bấm nút để mở xác minh ↓');
 }
 
 function onOpenLink(){
@@ -430,7 +454,6 @@ function onOpenLink(){
   startKeyPolling();
 }
 
-/* Polling TÌM KEY trong localStorage */
 let pollInt=null;
 let pollTimeout=null;
 function startKeyPolling(){
@@ -446,7 +469,6 @@ function startKeyPolling(){
     }
   },1000);
 
-  // Timeout 5 phút
   pollTimeout=setTimeout(()=>{
     clearInterval(pollInt);
     const stored=loadValidKey();
@@ -457,7 +479,6 @@ function startKeyPolling(){
   },300_000);
 }
 
-/* ═══ SHOW KEY UI ═══ */
 function showKeyUI(key,exp){
   document.getElementById('keyText').textContent=key;
   document.getElementById('keyBox').classList.add('show');
@@ -465,11 +486,10 @@ function showKeyUI(key,exp){
   document.getElementById('btnReset').style.display='flex';
   document.getElementById('getPanel').style.display='none';
   clearStatus();
-  setStatus('success','Xác minh thành công! Key đã được cấp.');
+  setStatus('success','Xác minh thành công! Key MỚI đã được cấp.');
   startTimer(exp);
 }
 
-/* ═══ TIMER ═══ */
 let timerInt=null;
 function startTimer(exp){
   clearInterval(timerInt);
@@ -484,7 +504,6 @@ function startTimer(exp){
 }
 const pad=n=>String(n).padStart(2,'0');
 
-/* ═══ COPY ═══ */
 function copyKey(){
   const key=document.getElementById('keyText').textContent;
   if(!key||key==='—')return;
@@ -495,10 +514,8 @@ function copyKey(){
   });
 }
 
-/* ═══ RESET ═══ */
 function resetFlow(){
   clearInterval(timerInt);clearInterval(pollInt);clearTimeout(pollTimeout);
-  // Xóa toàn bộ trạng thái cũ — lần bấm tiếp theo sẽ tạo link mới
   LS.del('ff_key');LS.del('ff_tok');LS.del('ff_tok_ts');LS.del('ff_short');
   document.getElementById('keyBox').classList.remove('show');
   document.getElementById('timerBar').classList.remove('show');
@@ -515,12 +532,9 @@ function resetFlow(){
 
 /* ══════════════════════════════════════════════
    ║  KAPOWWSS PAGE LOGIC (#kapowwss)          ║
-   ║  → Trang cấp key, chỉ chạy khi redirect   ║
-   ║    từ Link4M về URL có hash #kapowwss     ║
    ╚═════════════════════════════════════════════ */
 
 async function handleKapowwssPage(){
-  // Ẩn trang chính, hiện trang kapowwss
   document.getElementById('mainPage').style.display='none';
   document.getElementById('kapowPage').classList.add('show');
 
@@ -535,7 +549,6 @@ async function handleKapowwssPage(){
   const tokTs=parseInt(LS.get('ff_tok_ts')||'0',10);
   const elapsed=Date.now()-tokTs;
 
-  // Không có token → đã xử lý rồi hoặc truy cập trực tiếp
   if(!tok){
     const stored=loadValidKey();
     if(stored){
@@ -545,29 +558,27 @@ async function handleKapowwssPage(){
       sub.innerHTML='Key đã được gửi đến tab chính. Vui lòng quay lại tab đó để xem.';
       keyBox.style.display='block';
       keyText.textContent=stored.key;
-      note.innerHTML='<strong>Tab này có thể đóng thủ công.</strong><br><br><a class="kapowwss-back-btn" href="https://lch04122009-rgb.github.io/keyvip/">← Quay về trang chính</a>';
+      note.innerHTML='<strong>Tab này có thể đóng thủ công.</strong><br><br><a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
       return;
     }
     icon.textContent='⚠️';
     title.textContent='Không có yêu cầu nào';
     title.style.color='var(--go)';
     sub.innerHTML='Vui lòng quay lại trang chính và nhấn <strong>"Lấy Key"</strong> trước.';
-    note.innerHTML='<a class="kapowwss-back-btn" href="https://lch04122009-rgb.github.io/keyvip/">← Quay về trang chính</a>';
+    note.innerHTML='<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
     return;
   }
 
-  // Kiểm tra thời gian tối thiểu (chống bypass nhanh)
   if(elapsed<CFG.MIN_ELAPSED){
     icon.textContent='❌';
     title.textContent='Xác minh không hợp lệ';
     title.style.color='var(--re)';
     sub.innerHTML='Vui lòng hoàn thành <strong>toàn bộ quảng cáo</strong> trên Link4M.<br>Không được bỏ qua hoặc tải lại trang.';
     LS.del('ff_tok');LS.del('ff_tok_ts');
-    note.innerHTML='<a class="kapowwss-back-btn" href="https://lch04122009-rgb.github.io/keyvip/">← Thử lại từ đầu</a>';
+    note.innerHTML='<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Thử lại từ đầu</a>';
     return;
   }
 
-  // Kiểm tra referrer — phải đến từ Link4M (chống bypass bằng cách mở trực tiếp URL)
   const ref=document.referrer||'';
   const isFromLink4m=ref.includes('link4m');
 
@@ -577,34 +588,32 @@ async function handleKapowwssPage(){
     title.style.color='var(--re)';
     sub.innerHTML='Trang này chỉ dành cho redirect từ Link4M.<br>Vui lòng bấm link xác minh từ trang chính.';
     LS.del('ff_tok');LS.del('ff_tok_ts');
-    note.innerHTML='<a class="kapowwss-back-btn" href="https://lch04122009-rgb.github.io/keyvip/">← Quay về trang chính</a>';
+    note.innerHTML='<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
     return;
   }
 
-  // ✅ HỢP LỆ — Cấp key
   icon.textContent='⏳';
-  title.textContent='Đang tạo key...';
+  title.textContent='Đang tạo key MỚI...';
   sub.textContent='Vui lòng đợi vài giây';
 
   try{
     const did=getDeviceID();
+    // ★★★ genKey() luôn tạo key MỚI nhờ nonce random trong seed ★★★
     const key=await genKey(did);
     saveKey(key);
 
-    // Xóa token — báo hiệu đã xử lý xong
     LS.del('ff_tok');
     LS.del('ff_tok_ts');
     LS.del('ff_short');
 
-    // Hiện key
     icon.textContent='✅';
     title.textContent='Xác minh thành công!';
     title.style.color='var(--gr)';
-    sub.innerHTML='Key đã được gửi đến tab chính.';
+    sub.innerHTML='Key MỚI đã được gửi đến tab chính.';
     keyBox.style.display='block';
     keyText.textContent=key;
 
-    note.innerHTML='<strong>Quay lại tab chính</strong> để xem và copy key.<br><br><a class="kapowwss-back-btn" href="https://lch04122009-rgb.github.io/keyvip/">← Quay về trang chính</a>';
+    note.innerHTML='<strong>Quay lại tab chính</strong> để xem và copy key.<br><br><a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
 
   }catch(e){
     icon.textContent='❌';
@@ -612,40 +621,34 @@ async function handleKapowwssPage(){
     title.style.color='var(--re)';
     sub.textContent='Đã xảy ra lỗi. Vui lòng thử lại.';
     LS.del('ff_tok');LS.del('ff_tok_ts');
-    note.innerHTML='<a class="kapowwss-back-btn" href="https://lch04122009-rgb.github.io/keyvip/">← Quay về trang chính</a>';
+    note.innerHTML='<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
   }
 }
 
 /* ═══ INIT — ROUTER ═══ */
-const delay=ms=>new Promise(r=>setTimeout(r,ms));
-
 (function init(){
-  const isKapowwss = window.location.hash === '#kapowwss';
+  // Kiểm tra hash #kapowwss HOẶC query param _t/_r có hash #kapowwss
+  const hash=window.location.hash;
+  const isKapowwss = hash === '#kapowwss' || hash.includes('kapowwss');
 
   if(isKapowwss){
-    // ═══ TRANG KAPOWWSS — cấp key ═══
     handleKapowwssPage();
     return;
   }
 
-  // ═══ TRANG CHÍNH — chỉ hiển thị UI ═══
-
-  // Kiểm tra key cũ còn hạn
+  // TRANG CHÍNH
   const stored=loadValidKey();
   if(stored && stored.deviceID===getDeviceID()){
     showKeyUI(stored.key,stored.exp);
     return;
   }
 
-  // KHÔNG restore link box cũ — xóa toàn bộ trạng thái pending
-  // Mỗi lần load trang hoặc bấm lại sẽ tạo link MỚI từ API
-  if(LS.get('ff_tok') || LS.get('ff_short')){
-    LS.del('ff_tok');
-    LS.del('ff_tok_ts');
-    LS.del('ff_short');
-  }
+  // Xóa sạch trạng thái cũ — không restore link box
+  // Lần bấm "Lấy Key" tiếp theo sẽ gọi API tạo link MỚI
+  LS.del('ff_tok');
+  LS.del('ff_tok_ts');
+  LS.del('ff_short');
 
-  // Hiển thị UI mặc định
   document.getElementById('mainPage').style.display='block';
   document.getElementById('kapowPage').classList.remove('show');
 })();
