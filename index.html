@@ -272,7 +272,7 @@ const CFG = {
 
   // Thời gian tối thiểu user phải ở trang Link4M (ms)
   // Link4M thường mất 10-15 giây → đặt 8000 để an toàn
-  MIN_ELAPSED: 8000,
+  MIN_ELAPSED: 5000,
 };
 /* ══════════════════════════════════════ */
 
@@ -339,59 +339,31 @@ function setStatus(type, msg) {
 }
 function clearStatus() { document.getElementById('sb').className = 'sb'; }
 
-/* ══════════════════════════════════════════════
-   FLOW:
-   1. User nhấn nút → tạo token → lưu LS
-   2. Tạo URL Link4M dạng:
-      https://link4m.co/TOKEN?url=RETURN_URL
-      (không cần gọi API → không bị CORS)
-   3. Redirect thẳng sang Link4M
-   4. Sau khi xem quảng cáo, Link4M redirect về
-      BASE_URL?v=SESSION_TOKEN
-   5. Trang detect ?v= → validate → cấp key
-══════════════════════════════════════════════ */
 
-async function getShortLink(destUrl) {
-  // Gọi Link4M API qua allorigins proxy để bypass CORS
-  const apiUrl    = `https://link4m.co/api-shorten/v2?api=${CFG.TOKEN}&url=${encodeURIComponent(destUrl)}`;
-  const proxyUrl  = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
-
-  const res  = await fetch(proxyUrl);
-  if (!res.ok) throw new Error('Proxy lỗi HTTP ' + res.status);
-
-  const outer = await res.json();
-  // allorigins trả về { contents: "..." }
-  const data  = JSON.parse(outer.contents);
-
-  // Link4M v2 trả về: { status: "success", shortenedUrl: "https://..." }
-  const link  =
-    data.shortenedUrl ||
-    data.short_link   ||
-    data.url          ||
-    (data.status === 'success' && data.data?.url) ||
-    null;
-
-  if (!link) throw new Error(data.message || data.error || 'API không trả về link');
-  return link;
-}
+/* ════════════════════════════════════════════
+   FLOW MỚI — KHÔNG GỌI API, KHÔNG BỊ CORS
+   Link4M interstitial trực tiếp:
+     https://link4m.co/go?url=ENCODED_DEST&api=TOKEN
+   User thấy trang quảng cáo → Link4M redirect về ENCODED_DEST
+════════════════════════════════════════════ */
 
 async function startFlow() {
   const btn = document.getElementById('btnGet');
   btn.disabled = true;
-  setStatus('load', 'Đang tạo link xác minh...');
+  setStatus('load', 'Đang tạo phiên xác minh...');
 
   try {
     const tok = newSessionToken();
     LS.set('ff_pending_tok', tok);
     LS.set('ff_tok_ts', String(Date.now()));
 
-    const returnUrl = CFG.BASE_URL + '?v=' + tok;
-    const shortLink = await getShortLink(returnUrl);
+    const returnUrl    = CFG.BASE_URL + '?v=' + tok;
+    const interstitial = `https://link4m.co/go?url=${encodeURIComponent(returnUrl)}&api=${CFG.TOKEN}`;
 
     setStatus('ok', 'Đang chuyển trang xác minh...');
-    await delay(700);
+    await delay(600);
 
-    window.location.href = shortLink;
+    window.location.href = interstitial;
 
   } catch(e) {
     setStatus('err', 'Lỗi: ' + e.message);
