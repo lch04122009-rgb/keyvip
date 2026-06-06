@@ -374,6 +374,7 @@ const LS={
 
 /* ═══ KEY MANAGEMENT ═══ */
 function saveKey(key, sessionID){
+  // 1. Lưu vào localStorage (giữ nguyên cho UI)
   LS.setJ('ff_key',{
     key,
     deviceID: getDeviceID(),
@@ -382,6 +383,16 @@ function saveKey(key, sessionID){
     ts: Date.now(),
     used: false 
   });
+
+  // 2. ★★★ GHI VÀO FIREBASE ĐỂ APP KIỂM TRA ★★★
+  if(typeof fbDb !== 'undefined'){
+    fbDb.ref('keys/' + key).set({
+      used: false,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + CFG.EXPIRE_MS,
+      sessionID: sessionID
+    }).catch(err => console.error('Firebase save error:', err));
+  }
 }
 
 function markKeyAsUsed(){
@@ -390,7 +401,14 @@ function markKeyAsUsed(){
     d.used = true;
     d.usedAt = Date.now();
     LS.setJ('ff_key', d);
-    // Lưu ý: KHÔNG thêm vào blacklist, cho phép user lấy key mới bình thường
+    
+    // ★★★ CẬP NHẬT FIREBASE ★★★
+    if(typeof fbDb !== 'undefined'){
+      fbDb.ref('keys/' + d.key).update({
+        used: true,
+        usedAt: Date.now()
+      }).catch(err => console.error('Firebase update error:', err));
+    }
   }
 }
 
@@ -794,5 +812,28 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('contextmenu', e => e.preventDefault());
 </script>
+
+<!-- ═══ FIREBASE SDK ═══ -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script>
+// ★★★ FIREBASE CONFIG (từ hình ảnh của bạn) ★★★
+const firebaseConfig = {
+  apiKey: "AIzaSyB3Bm-SlcNEmUC2VdKCiNenf7vKhVhQx3A",
+  authDomain: "ff-key-system.firebaseapp.com",
+  projectId: "ff-key-system",
+  storageBucket: "ff-key-system.firebasestorage.app",
+  messagingSenderId: "784183180257",
+  appId: "1:784183180257:web:d5dd944f210a129779f0a0",
+  measurementId: "G-XT6Q4L909H"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const fbDb = firebase.database();
+
+console.log('✅ Firebase initialized successfully');
+</script>
+
 </body>
 </html>
