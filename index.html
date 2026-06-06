@@ -3,280 +3,370 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔑 FREE FIRE · KEY SYSTEM</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<title>FREE FIRE · KEY SYSTEM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{
-  --or:#FF6B00;--re:#FF1A1A;--go:#FFD700;
-  --bg:#050508;--border:#181830;
-  --ok:#00FF88;--dim:#55556A;--txt:#E0E0EE;
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --surface2: #16161f;
+  --border: #1e1e2e;
+  --border2: #2a2a3e;
+  --orange: #f97316;
+  --orange2: #ea580c;
+  --red: #ef4444;
+  --gold: #f59e0b;
+  --green: #22c55e;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #475569;
 }
-*{margin:0;padding:0;box-sizing:border-box}
-body{
-  font-family:'Rajdhani',sans-serif;
-  background:var(--bg);color:var(--txt);
-  min-height:100vh;overflow-x:hidden;
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
 }
-body::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(ellipse 70% 40% at 50% 0%,rgba(255,107,0,.15) 0%,transparent 65%),
-    radial-gradient(ellipse 40% 25% at 90% 90%,rgba(255,26,26,.08) 0%,transparent 55%),
-    repeating-linear-gradient(0deg,transparent,transparent 72px,rgba(255,107,0,.013) 72px,rgba(255,107,0,.013) 73px),
-    repeating-linear-gradient(90deg,transparent,transparent 72px,rgba(255,107,0,.013) 72px,rgba(255,107,0,.013) 73px);
+/* BG subtle */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 60% 35% at 50% 0%, rgba(249,115,22,.08) 0%, transparent 60%);
 }
-#pts{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-.pt{position:absolute;border-radius:50%;opacity:0;animation:floatUp linear infinite}
-@keyframes floatUp{
-  0%{transform:translateY(100vh);opacity:0}8%{opacity:.5}92%{opacity:.5}
-  100%{transform:translateY(-30px) translateX(20px);opacity:0}
+
+/* PARTICLES */
+#pts { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.pt {
+  position: absolute; border-radius: 50%; opacity: 0;
+  animation: rise linear infinite;
 }
-.wrap{
-  position:relative;z-index:1;min-height:100vh;
-  display:flex;flex-direction:column;align-items:center;
-  padding:30px 16px 70px;
+@keyframes rise {
+  0%   { transform: translateY(100vh); opacity: 0; }
+  8%   { opacity: .4; }
+  92%  { opacity: .4; }
+  100% { transform: translateY(-40px); opacity: 0; }
 }
-.hd{text-align:center;margin-bottom:30px;animation:slideD .8s cubic-bezier(.34,1.56,.64,1) both}
-@keyframes slideD{from{opacity:0;transform:translateY(-36px)}to{opacity:1;transform:none}}
-.badge{
-  display:inline-flex;align-items:center;gap:8px;
-  background:linear-gradient(135deg,var(--or),var(--re));
-  border-radius:5px;padding:4px 18px;
-  font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:3px;
-  color:#fff;margin-bottom:14px;box-shadow:0 0 22px rgba(255,107,0,.5);
+
+.page {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 460px;
+  display: flex; flex-direction: column; gap: 20px;
 }
-h1{
-  font-family:'Orbitron',monospace;
-  font-size:clamp(24px,6vw,48px);font-weight:900;line-height:1.1;letter-spacing:2px;
-  background:linear-gradient(135deg,#FFD700 0%,#FF6B00 50%,#FF1A1A 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  filter:drop-shadow(0 0 28px rgba(255,107,0,.55));
+
+/* HEADER */
+.header { text-align: center; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(249,115,22,.12);
+  border: 1px solid rgba(249,115,22,.25);
+  border-radius: 20px; padding: 5px 14px;
+  font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+  color: var(--orange); margin-bottom: 14px;
+  text-transform: uppercase;
 }
-.sub{font-family:'Share Tech Mono',monospace;color:var(--go);font-size:12px;letter-spacing:4px;margin-top:9px;opacity:.75}
-.card{
-  width:100%;max-width:520px;
-  background:linear-gradient(150deg,rgba(12,12,24,.97),rgba(6,6,14,.99));
-  border:1px solid var(--border);border-radius:18px;padding:30px;
-  position:relative;overflow:hidden;
-  box-shadow:0 0 0 1px rgba(255,107,0,.08),0 24px 64px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.04);
-  animation:fadeU .9s cubic-bezier(.34,1.56,.64,1) .15s both;
+.chip-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--orange);
+  animation: pulse-dot 2s ease-in-out infinite;
 }
-@keyframes fadeU{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:none}}
-.card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,var(--or),var(--go),var(--or),transparent);
-  animation:scan 3.5s linear infinite;
+@keyframes pulse-dot {
+  0%,100% { opacity:.4; transform: scale(1); }
+  50%      { opacity:1; transform: scale(1.4); }
 }
-@keyframes scan{0%,100%{opacity:.35}50%{opacity:1}}
-.sb{
-  display:none;align-items:center;gap:10px;
-  border-radius:9px;padding:12px 14px;margin-bottom:18px;
-  font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:1px;
+.title {
+  font-size: 32px; font-weight: 700; line-height: 1.15;
+  color: var(--text); letter-spacing: -0.5px;
+  margin-bottom: 6px;
 }
-.sb.show{display:flex;animation:fin .3s ease}
-@keyframes fin{from{opacity:0}to{opacity:1}}
-.sb.load{background:rgba(255,107,0,.09);border:1px solid rgba(255,107,0,.28);color:var(--or)}
-.sb.ok  {background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.28);color:var(--ok)}
-.sb.err {background:rgba(255,26,26,.07);border:1px solid rgba(255,26,26,.28);color:var(--re)}
-.sb.info{background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.28);color:var(--go)}
-.spin{width:14px;height:14px;border:2px solid rgba(255,107,0,.3);border-top-color:var(--or);border-radius:50%;animation:sp .75s linear infinite;flex-shrink:0}
-@keyframes sp{to{transform:rotate(360deg)}}
-.timer{
-  display:none;align-items:center;justify-content:space-between;
-  background:rgba(255,215,0,.05);border:1px solid rgba(255,215,0,.18);
-  border-radius:10px;padding:13px 20px;margin-bottom:20px;
+.title span { color: var(--orange); }
+.subtitle {
+  font-size: 13px; color: var(--text3); letter-spacing: 1px;
 }
-.timer.show{display:flex}
-.tl{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:2px}
-.tv{font-family:'Orbitron',monospace;font-size:20px;font-weight:700;color:var(--go);letter-spacing:2px}
-.tv.exp{color:var(--re);animation:blink 1s infinite}
-@keyframes blink{50%{opacity:.3}}
-.key-wrap{display:none;flex-direction:column;gap:10px;margin-bottom:20px}
-.key-wrap.show{display:flex;animation:pop .55s cubic-bezier(.34,1.56,.64,1)}
-@keyframes pop{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:none}}
-.kl{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--dim);text-align:center}
-.kb{
-  background:rgba(0,255,136,.05);border:1px solid rgba(0,255,136,.28);
-  border-radius:10px;padding:20px 16px;
-  display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;
+
+/* CARD */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  position: relative; overflow: hidden;
 }
-.kb::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(0,255,136,.05),transparent);
-  animation:shim 2.5s linear infinite;
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  opacity: .4;
 }
-@keyframes shim{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
-.kt{
-  font-family:'Share Tech Mono',monospace;font-size:clamp(13px,3vw,18px);
-  color:var(--ok);letter-spacing:3px;flex:1;word-break:break-all;
-  text-shadow:0 0 12px rgba(0,255,136,.5);
+
+/* STATUS BAR */
+.status {
+  display: none; align-items: center; gap: 10px;
+  border-radius: 10px; padding: 11px 14px;
+  margin-bottom: 16px;
+  font-size: 13px; font-weight: 500;
 }
-.cpb{
-  background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);
-  border-radius:8px;padding:10px 14px;
-  color:var(--ok);font-family:'Orbitron',monospace;font-size:10px;
-  cursor:pointer;transition:all .2s;letter-spacing:1px;flex-shrink:0;white-space:nowrap;
+.status.show { display: flex; }
+.status.loading { background: rgba(249,115,22,.08); border: 1px solid rgba(249,115,22,.2); color: var(--orange); }
+.status.success { background: rgba(34,197,94,.07); border: 1px solid rgba(34,197,94,.2); color: var(--green); }
+.status.error   { background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.2); color: var(--red); }
+.status.info    { background: rgba(245,158,11,.07); border: 1px solid rgba(245,158,11,.2); color: var(--gold); }
+.spinner {
+  width: 14px; height: 14px; flex-shrink: 0;
+  border: 2px solid rgba(249,115,22,.2); border-top-color: var(--orange);
+  border-radius: 50%; animation: spin .7s linear infinite;
 }
-.cpb:hover{background:rgba(0,255,136,.2);box-shadow:0 0 14px rgba(0,255,136,.3)}
-.cpb.done{background:rgba(0,255,136,.25);border-color:var(--ok)}
-.ib{
-  background:rgba(255,107,0,.06);border:1px solid rgba(255,107,0,.18);
-  border-radius:10px;padding:16px;margin-bottom:22px;
-  display:flex;align-items:flex-start;gap:12px;
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* TIMER */
+.timer-bar {
+  display: none; align-items: center; justify-content: space-between;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 12px 16px; margin-bottom: 16px;
 }
-.ii{font-size:26px;flex-shrink:0}
-.it{font-size:14px;line-height:1.7}
-.it strong{color:var(--or)}
-.steps{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
-.step{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:9px}
-.step-n{
-  width:28px;height:28px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,var(--or),var(--re));
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Orbitron',monospace;font-weight:700;font-size:11px;color:#fff;
-  box-shadow:0 0 10px rgba(255,107,0,.4);
+.timer-bar.show { display: flex; }
+.timer-label { font-size: 11px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+.timer-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px; font-weight: 600; color: var(--gold); letter-spacing: 1px;
 }
-.step-t{font-size:13.5px;color:var(--dim);line-height:1.4}
-.step-t strong{color:var(--txt)}
-.btn-get{
-  width:100%;padding:18px;border:none;border-radius:12px;cursor:pointer;
-  font-family:'Orbitron',monospace;font-size:13px;font-weight:900;letter-spacing:2px;color:#fff;
-  background:linear-gradient(135deg,#FF6B00,#FF1A1A);
-  box-shadow:0 4px 28px rgba(255,107,0,.45),0 0 0 1px rgba(255,107,0,.3);
-  transition:all .25s;position:relative;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;gap:12px;
+.timer-val.expired { color: var(--red); animation: blink 1s step-end infinite; }
+@keyframes blink { 50% { opacity: .3; } }
+
+/* KEY BOX */
+.key-box { display: none; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.key-box.show { display: flex; }
+.key-label { font-size: 11px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+.key-inner {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(34,197,94,.05); border: 1px solid rgba(34,197,94,.2);
+  border-radius: 10px; padding: 14px 16px;
 }
-.btn-get::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.1);opacity:0;transition:opacity .2s}
-.btn-get:hover::after{opacity:1}
-.btn-get:hover:not(:disabled){box-shadow:0 6px 36px rgba(255,107,0,.65),0 0 0 1px rgba(255,107,0,.5);transform:translateY(-2px)}
-.btn-get:active{transform:scale(.98)}
-.btn-get:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}
-.pulse{width:10px;height:10px;border-radius:50%;background:#fff;flex-shrink:0;animation:pr 1.8s ease-out infinite}
-@keyframes pr{0%{box-shadow:0 0 0 0 rgba(255,255,255,.5)}70%{box-shadow:0 0 0 10px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
-.overlay{
-  display:none;position:fixed;inset:0;z-index:100;
-  background:rgba(5,5,8,.92);
-  flex-direction:column;align-items:center;justify-content:center;gap:24px;
-  backdrop-filter:blur(4px);
+.key-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px; font-weight: 600;
+  color: var(--green); letter-spacing: 2px;
+  flex: 1; word-break: break-all;
 }
-.overlay.show{display:flex;animation:fin .4s ease}
-.ov-spin{
-  width:52px;height:52px;
-  border:3px solid rgba(255,107,0,.2);border-top-color:var(--or);
-  border-radius:50%;animation:sp .9s linear infinite;
+.copy-btn {
+  background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.25);
+  border-radius: 7px; padding: 8px 12px;
+  color: var(--green); font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all .2s; white-space: nowrap;
+  font-family: 'Inter', sans-serif;
 }
-.ov-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--go);letter-spacing:2px}
-.ov-sub{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--dim);letter-spacing:1px}
-.btn-reset{
-  width:100%;padding:13px;border:none;border-radius:10px;cursor:pointer;
-  font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:2px;
-  background:transparent;color:var(--dim);border:1px solid rgba(255,255,255,.07);
-  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;
+.copy-btn:hover { background: rgba(34,197,94,.18); }
+.copy-btn.copied { background: rgba(34,197,94,.25); }
+
+/* INFO BOX */
+.info-box {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 14px;
+  margin-bottom: 16px;
 }
-.btn-reset:hover{color:var(--txt);border-color:rgba(255,255,255,.15)}
-.dv{border:none;height:1px;background:linear-gradient(90deg,transparent,rgba(255,107,0,.2),transparent);margin:22px 0}
-.badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-.bdg{
-  display:flex;align-items:center;gap:5px;
-  background:rgba(255,107,0,.07);border:1px solid rgba(255,107,0,.14);
-  border-radius:20px;padding:5px 12px;font-size:10.5px;color:var(--dim);letter-spacing:1px;
+.info-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.info-text { font-size: 13.5px; line-height: 1.65; color: var(--text2); }
+.info-text strong { color: var(--text); }
+
+/* STEPS */
+.steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.step {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 9px;
 }
-.dot{width:6px;height:6px;border-radius:50%;background:var(--or);animation:dp 2.2s ease-in-out infinite}
-.dot.g{background:var(--ok)}
-@keyframes dp{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.35)}}
-.ft{margin-top:38px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(85,85,106,.38);letter-spacing:2px}
-@media(max-width:480px){.card{padding:22px 16px}.timer{flex-direction:column;gap:4px;text-align:center}}
+.step-num {
+  width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(249,115,22,.15); border: 1px solid rgba(249,115,22,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--orange);
+}
+.step-text { font-size: 13px; color: var(--text2); line-height: 1.4; }
+.step-text strong { color: var(--text); }
+
+/* MAIN BUTTON */
+.btn-main {
+  width: 100%; padding: 15px;
+  background: var(--orange); border: none; border-radius: 11px;
+  color: #fff; font-size: 14px; font-weight: 700;
+  letter-spacing: .5px; cursor: pointer;
+  transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: 'Inter', sans-serif;
+}
+.btn-main:hover:not(:disabled) { background: var(--orange2); transform: translateY(-1px); }
+.btn-main:active { transform: scale(.99); }
+.btn-main:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+
+/* RESET BUTTON */
+.btn-reset {
+  width: 100%; padding: 11px;
+  background: transparent; border: 1px solid var(--border2);
+  border-radius: 9px; color: var(--text3);
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  transition: all .2s; margin-top: 4px;
+  display: none; align-items: center; justify-content: center; gap: 6px;
+  font-family: 'Inter', sans-serif;
+}
+.btn-reset:hover { color: var(--text2); border-color: var(--border); }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* BADGES */
+.badges {
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+  padding-top: 4px;
+}
+.badge {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 10px;
+  font-size: 11px; color: var(--text3); letter-spacing: .5px;
+}
+.badge-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text3); }
+.badge-dot.green { background: var(--green); }
+.badge-dot.orange { background: var(--orange); }
+
+/* OVERLAY */
+.overlay {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(10,10,15,.9);
+  flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  backdrop-filter: blur(6px);
+}
+.overlay.show { display: flex; }
+.overlay-spin {
+  width: 44px; height: 44px;
+  border: 3px solid rgba(249,115,22,.15); border-top-color: var(--orange);
+  border-radius: 50%; animation: spin .8s linear infinite;
+}
+.overlay-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.overlay-sub { font-size: 12px; color: var(--text3); }
+
+/* FOOTER */
+.footer {
+  text-align: center; font-size: 11px;
+  color: var(--text3); letter-spacing: .5px;
+  margin-top: 4px;
+}
+
+@media (max-width: 480px) {
+  .title { font-size: 26px; }
+  .card { padding: 18px; }
+}
 </style>
 </head>
 <body>
 <div id="pts"></div>
 
 <div class="overlay" id="overlay">
-  <div class="ov-spin"></div>
-  <div class="ov-title">ĐANG XÁC MINH...</div>
-  <div class="ov-sub">Vui lòng đợi trong giây lát</div>
+  <div class="overlay-spin"></div>
+  <div class="overlay-title">Đang xác minh</div>
+  <div class="overlay-sub">Vui lòng đợi trong giây lát...</div>
 </div>
 
-<div class="wrap">
-  <div class="hd">
-    <div class="badge">⚡ FREE FIRE ⚡ KEY SYSTEM</div>
-    <h1>KEY ACCESS<br>SYSTEM</h1>
-    <div class="sub">▸ SECURE · ANTI-BYPASS · 24H VALID ◂</div>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="chip"><div class="chip-dot"></div>Free Fire · Key System</div>
+    <div class="title">Key Access <span>System</span></div>
+    <div class="subtitle">Secure · Anti-Bypass · Valid 24h</div>
   </div>
 
+  <!-- CARD -->
   <div class="card">
-    <div class="sb" id="sb"></div>
 
-    <div class="timer" id="timer">
-      <div class="tl">⏳ KEY HẾT HẠN TRONG</div>
-      <div class="tv" id="timerVal">24:00:00</div>
+    <div class="status" id="status"></div>
+
+    <!-- Timer -->
+    <div class="timer-bar" id="timerBar">
+      <div class="timer-label">⏱ Hết hạn trong</div>
+      <div class="timer-val" id="timerVal">24:00:00</div>
     </div>
 
-    <div class="key-wrap" id="keyWrap">
-      <div class="kl">🔑 KEY HỢP LỆ 24 GIỜ · DEVICE LOCKED</div>
-      <div class="kb">
-        <div class="kt" id="keyTxt">—</div>
-        <button class="cpb" id="cpBtn" onclick="copyKey()">COPY</button>
+    <!-- Key box -->
+    <div class="key-box" id="keyBox">
+      <div class="key-label">🔑 Key hợp lệ · Device Locked</div>
+      <div class="key-inner">
+        <div class="key-text" id="keyText">—</div>
+        <button class="copy-btn" id="copyBtn" onclick="copyKey()">Copy</button>
       </div>
     </div>
 
+    <!-- Get panel -->
     <div id="getPanel">
-      <div class="ib">
-        <div class="ii">🎮</div>
-        <div class="it">
-          Nhấn nút bên dưới để nhận <strong>KEY FREE FIRE</strong> miễn phí.<br>
-          Chỉ cần <strong>1 bước xác minh nhanh</strong> — hệ thống tự động xử lý, key hợp lệ <strong>24 giờ</strong>.
+      <div class="info-box">
+        <div class="info-icon">🎮</div>
+        <div class="info-text">
+          Nhận <strong>Key Free Fire</strong> miễn phí ngay bây giờ.<br>
+          Chỉ cần <strong>1 bước xác minh nhanh</strong> — key hợp lệ <strong>24 giờ</strong>.
         </div>
       </div>
 
       <div class="steps">
-        <div class="step"><div class="step-n">1</div><div class="step-t">Nhấn nút → <strong>tự động chuyển trang xác minh</strong></div></div>
-        <div class="step"><div class="step-n">2</div><div class="step-t">Hoàn thành quảng cáo ngắn trên trang Link4M</div></div>
-        <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Tự động quay lại</strong> → nhận KEY ngay lập tức ✅</div></div>
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Nhấn nút → <strong>chuyển trang xác minh</strong></div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Hoàn thành quảng cáo ngắn trên Link4M</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text"><strong>Tự động quay lại</strong> và nhận key ngay ✅</div>
+        </div>
       </div>
 
-      <button class="btn-get" id="btnGet" onclick="startFlow()">
-        <div class="pulse"></div>
-        ⚡ LẤY KEY FREE FIRE MIỄN PHÍ
+      <button class="btn-main" id="btnGet" onclick="startFlow()">
+        ⚡ Lấy Key Free Fire Miễn Phí
       </button>
     </div>
 
-    <button class="btn-reset" id="btnReset" onclick="resetFlow()" style="display:none">
-      🔄 LẤY KEY MỚI (key hiện tại hết hạn sau 24h)
+    <button class="btn-reset" id="btnReset" onclick="resetFlow()">
+      🔄 Lấy key mới
     </button>
 
-    <hr class="dv">
+    <div class="divider" style="margin-top:20px"></div>
+
     <div class="badges">
-      <div class="bdg"><div class="dot g"></div>ANTI-BYPASS</div>
-      <div class="bdg"><div class="dot"></div>DEVICE LOCK</div>
-      <div class="bdg"><div class="dot"></div>ONE-TIME TOKEN</div>
-      <div class="bdg"><div class="dot g"></div>24H AUTO-DELETE</div>
+      <div class="badge"><div class="badge-dot green"></div>Anti-Bypass</div>
+      <div class="badge"><div class="badge-dot orange"></div>Device Lock</div>
+      <div class="badge"><div class="badge-dot"></div>One-Time Token</div>
+      <div class="badge"><div class="badge-dot green"></div>24H Auto-Delete</div>
     </div>
+
   </div>
 
-  <div class="ft">◈ FREE FIRE KEY SYSTEM v4.1 ◈<br>POWERED BY LINK4M · ANTI-CRACK ENGINE</div>
+  <div class="footer">Free Fire Key System v5.0 · Powered by Link4M</div>
 </div>
 
 <script>
-/* ═══════════════ CONFIG ═══════════════ */
+/* ════ CONFIG ════ */
 const CFG = {
-  TOKEN   : '687f718ea1faab07844af330',
+  // Short link CỐ ĐỊNH bạn tạo sẵn trên Link4M dashboard
+  // Trỏ về: https://lch04122009-rgb.github.io/keyvip/
+  // SAU KHI CÓ SHORT LINK, điền vào đây:
+  SHORT_LINK: 'https://link4m.net/keyvip',   // <-- ĐỔI THÀNH SHORT LINK CỦA BẠN
 
-  // URL trang này — Link4M redirect về đây sau khi xem quảng cáo
-  BASE_URL: 'https://lch04122009-rgb.github.io/keyvip/',
-
-  SECRET  : 'FF_KEY_2026_SECRET',
+  BASE_URL  : 'https://lch04122009-rgb.github.io/keyvip/',
+  SECRET    : 'FF_KEY_2026_SECRET',
   KEY_LEN   : 18,
   KEY_CHARS : 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
-  EXPIRE_MS : 86_400_000,
-
-  // Thời gian tối thiểu user phải ở trang Link4M (ms)
-  // Link4M thường mất 10-15 giây → đặt 8000 để an toàn
-  MIN_ELAPSED: 5000,
+  EXPIRE_MS : 86_400_000,   // 24h
+  MIN_ELAPSED: 6000,        // 6 giây tối thiểu trên Link4M
 };
-/* ══════════════════════════════════════ */
 
-/* ── Device Fingerprint ── */
+/* ════ DEVICE ID ════ */
 function getDeviceID() {
   const raw = [
     navigator.userAgent, navigator.language, navigator.platform,
@@ -293,18 +383,18 @@ function getDeviceID() {
   return h.toString(16).toUpperCase().padStart(8, '0');
 }
 
-/* ── Key Generator SHA-256 ── */
+/* ════ KEY GEN ════ */
 async function genKey(deviceID) {
   const today = new Date().toISOString().slice(0, 10);
   const seed  = CFG.SECRET + '|' + deviceID + '|' + today;
   const buf   = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(seed));
   const arr   = Array.from(new Uint8Array(buf));
-  return Array.from({length: CFG.KEY_LEN}, (_, i) =>
+  return Array.from({ length: CFG.KEY_LEN }, (_, i) =>
     CFG.KEY_CHARS[arr[i] % CFG.KEY_CHARS.length]
   ).join('');
 }
 
-/* ── Storage ── */
+/* ════ STORAGE ════ */
 const LS = {
   get : k     => { try { return localStorage.getItem(k) } catch { return null } },
   set : (k,v) => { try { localStorage.setItem(k, v) } catch {} },
@@ -313,8 +403,8 @@ const LS = {
   setJ: (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catch {} },
 };
 
-function saveKey(key, deviceID) {
-  LS.setJ('ff_key', { key, deviceID, exp: Date.now() + CFG.EXPIRE_MS });
+function saveKey(key) {
+  LS.setJ('ff_key', { key, deviceID: getDeviceID(), exp: Date.now() + CFG.EXPIRE_MS });
 }
 function loadValidKey() {
   const d = LS.getJ('ff_key');
@@ -323,110 +413,107 @@ function loadValidKey() {
   return d;
 }
 
-/* ── One-time token ── */
-function newSessionToken() {
+/* ════ TOKEN ════ */
+function newToken() {
   return Array.from(crypto.getRandomValues(new Uint8Array(20)))
     .map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
-/* ── Status UI ── */
+/* ════ STATUS UI ════ */
 function setStatus(type, msg) {
-  const el = document.getElementById('sb');
-  el.className = 'sb show ' + type;
-  el.innerHTML = type === 'load'
-    ? `<div class="spin"></div><span>${msg}</span>`
-    : `<span>${{ok:'✅',err:'❌',info:'ℹ️'}[type]||''} ${msg}</span>`;
+  const el = document.getElementById('status');
+  const icon = { loading:'', success:'✅', error:'❌', info:'ℹ️' }[type] || '';
+  el.className = 'status show ' + type;
+  el.innerHTML = type === 'loading'
+    ? `<div class="spinner"></div><span>${msg}</span>`
+    : `<span>${icon} ${msg}</span>`;
 }
-function clearStatus() { document.getElementById('sb').className = 'sb'; }
+function clearStatus() {
+  document.getElementById('status').className = 'status';
+}
 
+/* ════ FLOW ════
+   Không gọi API → không bị CORS.
 
-/* ════════════════════════════════════════════
-   FLOW MỚI — KHÔNG GỌI API, KHÔNG BỊ CORS
-   Link4M interstitial trực tiếp:
-     https://link4m.co/go?url=ENCODED_DEST&api=TOKEN
-   User thấy trang quảng cáo → Link4M redirect về ENCODED_DEST
-════════════════════════════════════════════ */
+   SHORT LINK là link cố định tạo 1 lần trên Link4M dashboard.
+   Link4M trỏ về BASE_URL (không có ?v=).
+
+   Token được lưu vào localStorage TRƯỚC khi redirect.
+   Khi trang load lại (sau quảng cáo), đọc token từ localStorage,
+   không cần ?v= trên URL.
+
+   Anti-bypass: kiểm tra thời gian elapsed + token có tồn tại không.
+════ */
 
 async function startFlow() {
   const btn = document.getElementById('btnGet');
   btn.disabled = true;
-  setStatus('load', 'Đang tạo phiên xác minh...');
+  setStatus('loading', 'Đang chuẩn bị phiên xác minh...');
 
-  try {
-    const tok = newSessionToken();
-    LS.set('ff_pending_tok', tok);
-    LS.set('ff_tok_ts', String(Date.now()));
+  await delay(400);
 
-    const returnUrl    = CFG.BASE_URL + '?v=' + tok;
-    const interstitial = `https://link4m.co/go?url=${encodeURIComponent(returnUrl)}&api=${CFG.TOKEN}`;
+  const tok = newToken();
+  LS.set('ff_tok',    tok);
+  LS.set('ff_tok_ts', String(Date.now()));
+  LS.del('ff_key'); // Xóa key cũ nếu có
 
-    setStatus('ok', 'Đang chuyển trang xác minh...');
-    await delay(600);
+  setStatus('loading', 'Đang chuyển trang xác minh...');
+  await delay(500);
 
-    window.location.href = interstitial;
-
-  } catch(e) {
-    setStatus('err', 'Lỗi: ' + e.message);
-    btn.disabled = false;
-    LS.del('ff_pending_tok');
-    LS.del('ff_tok_ts');
-  }
+  // Redirect sang short link cố định của Link4M
+  window.location.href = CFG.SHORT_LINK;
 }
 
-/* ── Xử lý redirect về từ Link4M ── */
-async function handleReturn(token) {
+/* ════ XỬ LÝ KHI QUAY VỀ ════ */
+async function handleReturn() {
   document.getElementById('overlay').classList.add('show');
-  await delay(900);
+  await delay(800);
 
-  const savedTok = LS.get('ff_pending_tok');
-  const tokTs    = parseInt(LS.get('ff_tok_ts') || '0', 10);
-  const elapsed  = Date.now() - tokTs;
+  const tok     = LS.get('ff_tok');
+  const tokTs   = parseInt(LS.get('ff_tok_ts') || '0', 10);
+  const elapsed = Date.now() - tokTs;
 
-  // Xóa token ngay để không dùng lại được
-  LS.del('ff_pending_tok');
+  // Xóa ngay (one-time)
+  LS.del('ff_tok');
   LS.del('ff_tok_ts');
-  cleanUrl();
 
-  /* Kiểm tra 1: token phải khớp */
-  if (!savedTok || savedTok !== token) {
+  // Kiểm tra có token không
+  if (!tok) {
     document.getElementById('overlay').classList.remove('show');
-    setStatus('err', 'Token không hợp lệ! Vui lòng thử lại.');
+    setStatus('error', 'Không tìm thấy phiên xác minh. Vui lòng thử lại.');
     document.getElementById('btnGet').disabled = false;
     return;
   }
 
-  /* Kiểm tra 2: phải mất đủ thời gian (không bypass bằng cách tự ghép URL) */
+  // Kiểm tra thời gian (chống bypass bằng cách mở thẳng BASE_URL)
   if (elapsed < CFG.MIN_ELAPSED) {
     document.getElementById('overlay').classList.remove('show');
-    setStatus('err', 'Phát hiện bypass! Vui lòng hoàn thành quảng cáo đầy đủ.');
+    setStatus('error', 'Vui lòng hoàn thành quảng cáo trước khi quay lại.');
     document.getElementById('btnGet').disabled = false;
     return;
   }
 
-  /* ✅ Hợp lệ → cấp key */
+  // ✅ Hợp lệ → tạo key
   const deviceID = getDeviceID();
   const key      = await genKey(deviceID);
-  saveKey(key, deviceID);
+  saveKey(key);
 
   document.getElementById('overlay').classList.remove('show');
   showKeyUI(key, LS.getJ('ff_key').exp);
 }
 
-function cleanUrl() {
-  const clean = window.location.origin + window.location.pathname;
-  window.history.replaceState({}, '', clean);
-}
-
+/* ════ HIỆN KEY UI ════ */
 function showKeyUI(key, exp) {
-  document.getElementById('getPanel').style.display = 'none';
-  document.getElementById('keyTxt').textContent = key;
-  document.getElementById('keyWrap').classList.add('show');
-  document.getElementById('timer').classList.add('show');
-  document.getElementById('btnReset').style.display = 'flex';
+  document.getElementById('getPanel').style.display  = 'none';
+  document.getElementById('keyText').textContent     = key;
+  document.getElementById('keyBox').classList.add('show');
+  document.getElementById('timerBar').classList.add('show');
+  document.getElementById('btnReset').style.display  = 'flex';
   clearStatus();
   startTimer(exp);
 }
 
+/* ════ TIMER ════ */
 let timerInt = null;
 function startTimer(exp) {
   clearInterval(timerInt);
@@ -435,78 +522,97 @@ function startTimer(exp) {
     const d = Math.max(0, exp - Date.now());
     if (d === 0) {
       LS.del('ff_key');
-      el.className = 'tv exp'; el.textContent = 'HẾT HẠN';
+      el.className     = 'timer-val expired';
+      el.textContent   = 'Hết hạn';
       clearInterval(timerInt);
-      setTimeout(resetFlow, 2500);
+      setTimeout(resetFlow, 2000);
       return;
     }
-    const h = Math.floor(d/3600000), m = Math.floor((d%3600000)/60000), s = Math.floor((d%60000)/1000);
-    el.textContent = `${p(h)}:${p(m)}:${p(s)}`;
+    const h = Math.floor(d / 3600000);
+    const m = Math.floor((d % 3600000) / 60000);
+    const s = Math.floor((d % 60000)   / 1000);
+    el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
   }
-  tick(); timerInt = setInterval(tick, 1000);
+  tick();
+  timerInt = setInterval(tick, 1000);
 }
-const p = n => String(n).padStart(2,'0');
+const pad = n => String(n).padStart(2, '0');
 
+/* ════ COPY ════ */
 function copyKey() {
-  const key = document.getElementById('keyTxt').textContent;
+  const key = document.getElementById('keyText').textContent;
   if (!key || key === '—') return;
   navigator.clipboard.writeText(key).then(() => {
-    const b = document.getElementById('cpBtn');
-    b.textContent = '✓ COPIED'; b.classList.add('done');
-    setTimeout(() => { b.textContent = 'COPY'; b.classList.remove('done'); }, 2000);
+    const b = document.getElementById('copyBtn');
+    b.textContent = '✓ Copied';
+    b.classList.add('copied');
+    setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('copied'); }, 2000);
   });
 }
 
+/* ════ RESET ════ */
 function resetFlow() {
   clearInterval(timerInt);
-  LS.del('ff_key'); LS.del('ff_pending_tok'); LS.del('ff_tok_ts');
-  document.getElementById('keyWrap').classList.remove('show');
-  document.getElementById('timer').classList.remove('show');
-  document.getElementById('timerVal').className = 'tv';
+  LS.del('ff_key'); LS.del('ff_tok'); LS.del('ff_tok_ts');
+  document.getElementById('keyBox').classList.remove('show');
+  document.getElementById('timerBar').classList.remove('show');
+  document.getElementById('timerVal').className    = 'timer-val';
   document.getElementById('btnReset').style.display = 'none';
   document.getElementById('getPanel').style.display = 'block';
-  document.getElementById('btnGet').disabled = false;
-  clearStatus(); cleanUrl();
+  document.getElementById('btnGet').disabled        = false;
+  clearStatus();
 }
 
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
-/* ══ INIT ══ */
+/* ════ INIT ════ */
 (function init() {
-  const params = new URLSearchParams(window.location.search);
-  const urlTok = params.get('v');
-
-  if (urlTok) {
-    handleReturn(urlTok);
-    return;
-  }
-
+  // Kiểm tra key cũ còn hạn
   const stored = loadValidKey();
   if (stored && stored.deviceID === getDeviceID()) {
     showKeyUI(stored.key, stored.exp);
     return;
   }
 
-  // Có pending token nhưng không có ?v= → user reload giữa chừng
-  if (LS.get('ff_pending_tok')) {
-    LS.del('ff_pending_tok'); LS.del('ff_tok_ts');
-    setStatus('info', 'Phiên bị gián đoạn. Vui lòng bắt đầu lại.');
-    setTimeout(clearStatus, 3500);
+  // Kiểm tra có pending token không
+  // → trang load lại sau khi xem quảng cáo Link4M
+  const tok   = LS.get('ff_tok');
+  const tokTs = parseInt(LS.get('ff_tok_ts') || '0', 10);
+  const age   = Date.now() - tokTs;
+
+  if (tok && age > 0 && age < 3_600_000) {
+    // Có token hợp lệ (< 1 tiếng) → xử lý return
+    handleReturn();
+    return;
+  }
+
+  // Xóa token cũ nếu quá hạn
+  if (tok) {
+    LS.del('ff_tok'); LS.del('ff_tok_ts');
   }
 })();
 
-/* ── Particles ── */
+/* ════ PARTICLES ════ */
 (function() {
   const c = document.getElementById('pts');
-  for (let i = 0; i < 30; i++) {
-    const pt = document.createElement('div'); pt.className = 'pt';
-    pt.style.cssText = `left:${Math.random()*100}%;width:${Math.random()>.7?3:2}px;height:${Math.random()>.7?3:2}px;animation-duration:${7+Math.random()*12}s;animation-delay:${Math.random()*10}s;background:${Math.random()>.5?'#FF6B00':'#FFD700'};`;
-    c.appendChild(pt);
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'pt';
+    p.style.cssText = [
+      `left:${Math.random()*100}%`,
+      `width:${Math.random() > .7 ? 3 : 2}px`,
+      `height:${Math.random() > .7 ? 3 : 2}px`,
+      `animation-duration:${8 + Math.random()*14}s`,
+      `animation-delay:${Math.random()*12}s`,
+      `background:${Math.random() > .5 ? '#f97316' : '#f59e0b'}`,
+    ].join(';');
+    c.appendChild(p);
   }
 })();
 
+/* ════ ANTI-DEVTOOLS ════ */
 document.addEventListener('keydown', e => {
-  if (e.key==='F12'||(e.ctrlKey&&e.shiftKey&&'IJC'.includes(e.key))||(e.ctrlKey&&e.key==='U'))
+  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && 'IJC'.includes(e.key)) || (e.ctrlKey && e.key === 'U'))
     e.preventDefault();
 });
 document.addEventListener('contextmenu', e => e.preventDefault());
