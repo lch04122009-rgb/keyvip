@@ -351,30 +351,47 @@ function clearStatus() { document.getElementById('sb').className = 'sb'; }
    5. Trang detect ?v= → validate → cấp key
 ══════════════════════════════════════════════ */
 
-function buildLink4mUrl(returnUrl) {
-  // Link4M redirect format: https://link4m.co/API_TOKEN?url=ENCODED_RETURN
-  // Đây là cách gọi không cần CORS vì chỉ là URL redirect thông thường
-  return `https://link4m.co/${CFG.TOKEN}?url=${encodeURIComponent(returnUrl)}`;
+async function getShortLink(destUrl) {
+  // Gọi Link4M API qua allorigins proxy để bypass CORS
+  const apiUrl    = `https://link4m.co/api-shorten/v2?api=${CFG.TOKEN}&url=${encodeURIComponent(destUrl)}`;
+  const proxyUrl  = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
+
+  const res  = await fetch(proxyUrl);
+  if (!res.ok) throw new Error('Proxy lỗi HTTP ' + res.status);
+
+  const outer = await res.json();
+  // allorigins trả về { contents: "..." }
+  const data  = JSON.parse(outer.contents);
+
+  // Link4M v2 trả về: { status: "success", shortenedUrl: "https://..." }
+  const link  =
+    data.shortenedUrl ||
+    data.short_link   ||
+    data.url          ||
+    (data.status === 'success' && data.data?.url) ||
+    null;
+
+  if (!link) throw new Error(data.message || data.error || 'API không trả về link');
+  return link;
 }
 
 async function startFlow() {
   const btn = document.getElementById('btnGet');
   btn.disabled = true;
-  setStatus('load', 'Đang tạo phiên xác minh...');
+  setStatus('load', 'Đang tạo link xác minh...');
 
   try {
     const tok = newSessionToken();
     LS.set('ff_pending_tok', tok);
     LS.set('ff_tok_ts', String(Date.now()));
 
-    const returnUrl  = CFG.BASE_URL + '?v=' + tok;
-    const link4mUrl  = buildLink4mUrl(returnUrl);
+    const returnUrl = CFG.BASE_URL + '?v=' + tok;
+    const shortLink = await getShortLink(returnUrl);
 
     setStatus('ok', 'Đang chuyển trang xác minh...');
     await delay(700);
 
-    // Redirect cả tab này — tránh bị chặn popup
-    window.location.href = link4mUrl;
+    window.location.href = shortLink;
 
   } catch(e) {
     setStatus('err', 'Lỗi: ' + e.message);
