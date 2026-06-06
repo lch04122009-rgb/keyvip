@@ -104,7 +104,6 @@ body::before{
 .step-text{font-size:13px;color:var(--tx2);line-height:1.4}
 .step-text strong{color:var(--tx)}
 
-/* LINK BOX — hiện short link cho user bấm */
 .link-box{
   display:none;flex-direction:column;gap:10px;margin-bottom:16px;
 }
@@ -155,6 +154,22 @@ body::before{
 }
 .bdot{width:5px;height:5px;border-radius:50%;background:var(--tx3)}
 .bdot.g{background:var(--gr)}.bdot.o{background:var(--or)}
+
+/* ═══ KAPOWWSS RETURN PAGE STYLES ═══ */
+.kapowwss-page{display:none;text-align:center;padding:20px 0}
+.kapowwss-page.show{display:block}
+.kapowwss-icon{font-size:56px;margin-bottom:16px}
+.kapowwss-title{font-size:20px;font-weight:700;margin-bottom:8px}
+.kapowwss-sub{font-size:13px;color:var(--tx2);line-height:1.6}
+.kapowwss-sub strong{color:var(--gr)}
+.kapowwss-key-display{
+  margin:20px 0;padding:16px;
+  background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.25);
+  border-radius:10px;
+}
+.kapowwss-key-display .key-text{font-size:18px}
+.kapowwss-countdown{font-size:12px;color:var(--tx3);margin-top:12px}
+
 .overlay{
   display:none;position:fixed;inset:0;z-index:100;
   background:rgba(10,10,15,.92);
@@ -188,79 +203,93 @@ body::before{
   <div class="card">
     <div class="status" id="status"></div>
 
-    <div class="timer-bar" id="timerBar">
-      <div class="timer-label">⏱ Hết hạn trong</div>
-      <div class="timer-val" id="timerVal">24:00:00</div>
-    </div>
-
-    <div class="key-box" id="keyBox">
-      <div class="key-label">🔑 Key hợp lệ · Device Locked</div>
-      <div class="key-inner">
-        <div class="key-text" id="keyText">—</div>
-        <button class="copy-btn" id="copyBtn" onclick="copyKey()">Copy</button>
+    <!-- ═══ MAIN PAGE CONTENT ═══ -->
+    <div id="mainPage">
+      <div class="timer-bar" id="timerBar">
+        <div class="timer-label">⏱ Hết hạn trong</div>
+        <div class="timer-val" id="timerVal">24:00:00</div>
       </div>
-    </div>
 
-    <div id="getPanel">
-      <div class="info-box">
-        <div class="info-icon">🎮</div>
-        <div class="info-text">
-          Nhận <strong>Key Free Fire</strong> miễn phí ngay bây giờ.<br>
-          Chỉ cần <strong>1 bước xác minh nhanh</strong> — key hợp lệ <strong>24 giờ</strong>.
+      <div class="key-box" id="keyBox">
+        <div class="key-label">🔑 Key hợp lệ · Device Locked</div>
+        <div class="key-inner">
+          <div class="key-text" id="keyText">—</div>
+          <button class="copy-btn" id="copyBtn" onclick="copyKey()">Copy</button>
         </div>
       </div>
 
-      <div class="steps" id="stepsPanel">
-        <div class="step"><div class="step-num">1</div><div class="step-text">Nhấn nút → <strong>hệ thống tạo link xác minh</strong></div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-text">Bấm vào link → hoàn thành quảng cáo Link4M</div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Tự động quay lại</strong> và nhận key ngay ✅</div></div>
+      <div id="getPanel">
+        <div class="info-box">
+          <div class="info-icon">🎮</div>
+          <div class="info-text">
+            Nhận <strong>Key Free Fire</strong> miễn phí ngay bây giờ.<br>
+            Chỉ cần <strong>1 bước xác minh nhanh</strong> — key hợp lệ <strong>24 giờ</strong>.
+          </div>
+        </div>
+
+        <div class="steps" id="stepsPanel">
+          <div class="step"><div class="step-num">1</div><div class="step-text">Nhấn nút → <strong>hệ thống tạo link xác minh</strong></div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-text">Bấm vào link → hoàn thành quảng cáo Link4M</div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Tự động quay lại</strong> và nhận key ngay ✅</div></div>
+        </div>
+
+        <button class="btn-main" id="btnGet" onclick="startFlow()">
+          ⚡ Lấy Key Free Fire Miễn Phí
+        </button>
+
+        <div class="link-box" id="linkBox">
+          <div class="link-box-label">🔗 Link xác minh của bạn</div>
+          <div class="link-inner">
+            <div class="link-text" id="linkText">—</div>
+            <a class="link-open-btn" id="linkOpenBtn" href="#" target="_blank" onclick="onOpenLink()">
+              Bấm vào đây →
+            </a>
+          </div>
+          <div class="link-note">
+            Bấm nút trên → xem quảng cáo ngắn → <strong>key tự hiện tại tab này</strong>
+          </div>
+        </div>
       </div>
 
-      <!-- Bước 1: nút tạo link -->
-      <button class="btn-main" id="btnGet" onclick="startFlow()">
-        ⚡ Lấy Key Free Fire Miễn Phí
+      <button class="btn-reset" id="btnReset" onclick="resetFlow()">
+        🔄 Lấy key mới
       </button>
 
-      <!-- Bước 2: hiện link cho user bấm -->
-      <div class="link-box" id="linkBox">
-        <div class="link-box-label">🔗 Link xác minh của bạn</div>
-        <div class="link-inner">
-          <div class="link-text" id="linkText">—</div>
-          <a class="link-open-btn" id="linkOpenBtn" href="#" target="_blank" onclick="onOpenLink()">
-            Bấm vào đây →
-          </a>
-        </div>
-        <div class="link-note">
-          Bấm nút trên → xem quảng cáo ngắn → <strong>trang sẽ tự động cấp key</strong>
-        </div>
+      <div class="divider"></div>
+      <div class="badges">
+        <div class="badge"><div class="bdot g"></div>Anti-Bypass</div>
+        <div class="badge"><div class="bdot o"></div>Device Lock</div>
+        <div class="badge"><div class="bdot"></div>One-Time Token</div>
+        <div class="badge"><div class="bdot g"></div>24H Auto-Delete</div>
       </div>
     </div>
 
-    <button class="btn-reset" id="btnReset" onclick="resetFlow()">
-      🔄 Lấy key mới
-    </button>
-
-    <div class="divider"></div>
-    <div class="badges">
-      <div class="badge"><div class="bdot g"></div>Anti-Bypass</div>
-      <div class="badge"><div class="bdot o"></div>Device Lock</div>
-      <div class="badge"><div class="bdot"></div>One-Time Token</div>
-      <div class="badge"><div class="bdot g"></div>24H Auto-Delete</div>
+    <!-- ═══ KAPOWWSS RETURN PAGE CONTENT ═══ -->
+    <div class="kapowwss-page" id="kapowPage">
+      <div class="kapowwss-icon" id="kapowIcon">⏳</div>
+      <div class="kapowwss-title" id="kapowTitle">Đang xử lý...</div>
+      <div class="kapowwss-sub" id="kapowSub">Vui lòng đợi</div>
+      <div class="kapowwss-key-display" id="kapowKeyBox" style="display:none">
+        <div class="key-label" style="margin-bottom:8px">🔑 Key của bạn</div>
+        <div class="key-text" id="kapowKeyText">—</div>
+      </div>
+      <div class="kapowwss-countdown" id="kapowCountdown"></div>
     </div>
   </div>
 
-  <div class="footer">Free Fire Key System v5.2 · Powered by Link4M</div>
+  <div class="footer">Free Fire Key System v5.3 · Anti-Bypass · Powered by Link4M</div>
 </div>
 
 <script>
 const CFG = {
   API_TOKEN  : '687f718ea1faab07844af330',
-  BASE_URL   : 'https://lch04122009-rgb.github.io/keyvip/',
+  // URL GỐC ĐỂ RÚT GỌN — chứa hash #kapowwss để phân biệt trang cấp key
+  RETURN_URL : 'https://lch04122009-rgb.github.io/keyvip/#kapowwss',
   SECRET     : 'FF_KEY_2026_SECRET',
   KEY_LEN    : 18,
   KEY_CHARS  : 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
   EXPIRE_MS  : 86_400_000,
-  MIN_ELAPSED: 5_000,
+  MIN_ELAPSED: 8_000, // Tăng lên 8s để an toàn hơn
 };
 
 /* ═══ DEVICE ID ═══ */
@@ -290,7 +319,7 @@ const LS={
   getJ:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},
   setJ:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}},
 };
-function saveKey(key){LS.setJ('ff_key',{key,deviceID:getDeviceID(),exp:Date.now()+CFG.EXPIRE_MS});}
+function saveKey(key){LS.setJ('ff_key',{key,deviceID:getDeviceID(),exp:Date.now()+CFG.EXPIRE_MS,ts:Date.now()});}
 function loadValidKey(){
   const d=LS.getJ('ff_key');
   if(!d)return null;
@@ -309,15 +338,9 @@ function setStatus(type,msg){
 }
 function clearStatus(){document.getElementById('status').className='status';}
 
-/* ═══ GỌI API LINK4M ═══
-   Gọi trực tiếp từ browser — không có CORS issue vì
-   Link4M API trả về header Access-Control-Allow-Origin: *
-   (đã được xác nhận hoạt động từ browser trước đó)
-═══ */
+/* ═══ LINK4M API ═══ */
 async function createShortLink(destUrl){
   const url=`https://link4m.co/api-shorten/v2?api=${CFG.API_TOKEN}&url=${encodeURIComponent(destUrl)}`;
-  
-  // Thử fetch thẳng trước
   try{
     const r=await fetch(url,{method:'GET'});
     if(r.ok){
@@ -327,18 +350,15 @@ async function createShortLink(destUrl){
       throw new Error(d.message||d.error||'API không trả link');
     }
   }catch(e){
-    // Nếu CORS block → thử qua nhiều proxy
     const proxies=[
       `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
       `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-      `https://cors-anywhere.herokuapp.com/${url}`,
     ];
     for(const proxy of proxies){
       try{
-        const r=await fetch(proxy,{method:'GET',headers:{'X-Requested-With':'XMLHttpRequest'}});
+        const r=await fetch(proxy,{method:'GET'});
         if(!r.ok)continue;
         const raw=await r.json();
-        // allorigins wrap trong {contents:"..."}
         const text=raw.contents||raw;
         const d=typeof text==='string'?JSON.parse(text):text;
         const link=d.shortenedUrl||d.short_link||d.url||(d.status==='success'&&d.data?.url)||null;
@@ -349,28 +369,27 @@ async function createShortLink(destUrl){
   }
 }
 
-/* ═══ FLOW ═══ */
+/* ══════════════════════════════════════════
+   ║  MAIN PAGE LOGIC (không có hash)      ║
+   ║  → Chỉ hiển thị UI, KHÔNG cấp key     ║
+   ╚═════════════════════════════════════════ */
+
 async function startFlow(){
   const btn=document.getElementById('btnGet');
   btn.disabled=true;
   setStatus('loading','Đang tạo link xác minh...');
 
   try{
-    // Tạo token lưu LS
     const tok=Array.from(crypto.getRandomValues(new Uint8Array(20)))
       .map(b=>b.toString(16).padStart(2,'0')).join('');
     LS.set('ff_tok',tok);
     LS.set('ff_tok_ts',String(Date.now()));
-    LS.del('ff_key');
+    LS.del('ff_key'); // Xóa key cũ để đảm bảo fresh
 
-    // Return URL = trang này (Link4M sẽ redirect về đây sau quảng cáo)
-    const returnUrl=CFG.BASE_URL;
-    const shortLink=await createShortLink(returnUrl);
-
-    // Lưu short link để check sau
+    // RÚT GỌN LINK TRỎ TỚI #kapowwss — trang cấp key riêng biệt
+    const shortLink=await createShortLink(CFG.RETURN_URL);
     LS.set('ff_short',shortLink);
 
-    // Hiện link cho user bấm
     showLinkBox(shortLink);
     clearStatus();
 
@@ -381,7 +400,6 @@ async function startFlow(){
   }
 }
 
-/* Hiện link box */
 function showLinkBox(link){
   document.getElementById('btnGet').style.display='none';
   document.getElementById('stepsPanel').style.display='none';
@@ -394,92 +412,45 @@ function showLinkBox(link){
   setStatus('info','Bấm nút để mở link xác minh bên dưới ↓');
 }
 
-/* Khi user bấm link */
 function onOpenLink(){
-  setStatus('loading','Đang chờ bạn hoàn thành xác minh...');
-  // Link mở trong tab mới (target=_blank)
-  // Polling check xem user đã quay về chưa
-  startPolling();
+  setStatus('loading','Đang chờ bạn hoàn thành xác minh... Key sẽ tự hiện tại tab này.');
+  startKeyPolling(); // Polling tìm key trong localStorage
 }
 
-/* Polling: check localStorage token còn không
-   Nếu user mở link trong tab mới và tab mới redirect về BASE_URL
-   thì BASE_URL sẽ detect token → cấp key → xóa token
-   Tab này polling phát hiện token bị xóa → biết user đã xong */
+/* Polling TÌM KEY trong localStorage — không phải polling token deletion */
 let pollInt=null;
-let pollStart=0;
-function startPolling(){
-  pollStart=Date.now();
+function startKeyPolling(){
   clearInterval(pollInt);
-  pollInt=setInterval(async()=>{
-    const tok=LS.get('ff_tok');
-    const elapsed=Date.now()-pollStart;
-
-    // Token bị xóa = tab mới đã xử lý xong → cấp key ở tab này
-    if(!tok && elapsed>3000){
+  pollInt=setInterval(()=>{
+    const stored=loadValidKey();
+    if(stored && stored.deviceID===getDeviceID()){
       clearInterval(pollInt);
-      await issueKey();
-      return;
+      showKeyUI(stored.key,stored.exp);
     }
-    // Timeout 5 phút
-    if(elapsed>300_000){
+  },1000);
+
+  // Timeout 5 phút
+  setTimeout(()=>{
+    if(pollInt){
       clearInterval(pollInt);
-      setStatus('error','Hết thời gian. Vui lòng thử lại.');
-      resetFlow();
+      const stored=loadValidKey();
+      if(!stored){
+        setStatus('error','Hết thời gian chờ. Vui lòng thử lại.');
+        resetFlow();
+      }
     }
-  },800);
+  },300_000);
 }
 
-/* Cấp key */
-async function issueKey(){
-  document.getElementById('overlay').classList.add('show');
-  await delay(600);
-
-  const key=await genKey(getDeviceID());
-  saveKey(key);
-
-  document.getElementById('overlay').classList.remove('show');
-  document.getElementById('getPanel').style.display='none';
-  showKeyUI(key,LS.getJ('ff_key').exp);
-}
-
-/* ═══ XỬ LÝ KHI LINK4M REDIRECT VỀ TRANG NÀY (tab mới) ═══ */
-async function handleReturn(){
-  // Tab này là tab mới được Link4M redirect về
-  // Xác minh token còn trong LS
-  const tok=LS.get('ff_tok');
-  const tokTs=parseInt(LS.get('ff_tok_ts')||'0',10);
-  const elapsed=Date.now()-tokTs;
-
-  if(!tok){
-    // Không có token → có thể đã được xử lý rồi, bỏ qua
-    return;
-  }
-
-  if(elapsed<CFG.MIN_ELAPSED){
-    // Quá nhanh → bypass → xóa token, không cấp key
-    LS.del('ff_tok');LS.del('ff_tok_ts');
-    setStatus('error','Vui lòng hoàn thành quảng cáo đầy đủ.');
-    return;
-  }
-
-  // ✅ Hợp lệ → xóa token (báo hiệu cho tab gốc qua polling)
-  LS.del('ff_tok');
-  LS.del('ff_tok_ts');
-  // Tab này đóng lại hoặc hiện thông báo
-  // Tab gốc sẽ phát hiện token bị xóa qua polling và cấp key
-  document.title='✅ Xác minh thành công!';
-  // Thử đóng tab này sau 1 giây
-  setTimeout(()=>{ try{ window.close(); }catch{} },1000);
-}
-
-/* ═══ SHOW KEY ═══ */
+/* ═══ SHOW KEY UI ═══ */
 function showKeyUI(key,exp){
   document.getElementById('keyText').textContent=key;
   document.getElementById('keyBox').classList.add('show');
   document.getElementById('timerBar').classList.add('show');
   document.getElementById('btnReset').style.display='flex';
+  document.getElementById('getPanel').style.display='none';
   clearStatus();
+  setStatus('success','Xác minh thành công! Key đã được cấp.');
   startTimer(exp);
 }
 
@@ -526,48 +497,164 @@ function resetFlow(){
   clearStatus();
 }
 
+/* ══════════════════════════════════════════════
+   ║  KAPOWWSS PAGE LOGIC (#kapowwss)          ║
+   ║  → Trang cấp key, chỉ chạy khi redirect   ║
+   ║    từ Link4M về URL có hash #kapowwss     ║
+   ╚═════════════════════════════════════════════ */
+
+async function handleKapowwssPage(){
+  // Ẩn trang chính, hiện trang kapowwss
+  document.getElementById('mainPage').style.display='none';
+  document.getElementById('kapowPage').classList.add('show');
+
+  const icon=document.getElementById('kapowIcon');
+  const title=document.getElementById('kapowTitle');
+  const sub=document.getElementById('kapowSub');
+  const keyBox=document.getElementById('kapowKeyBox');
+  const keyText=document.getElementById('kapowKeyText');
+  const countdown=document.getElementById('kapowCountdown');
+
+  const tok=LS.get('ff_tok');
+  const tokTs=parseInt(LS.get('ff_tok_ts')||'0',10);
+  const elapsed=Date.now()-tokTs;
+
+  // Không có token → đã xử lý rồi hoặc truy cập trực tiếp
+  if(!tok){
+    // Kiểm tra xem có key hợp lệ không (có thể tab chính đã nhận)
+    const stored=loadValidKey();
+    if(stored){
+      icon.textContent='✅';
+      title.textContent='Key đã được cấp!';
+      title.style.color='var(--gr)';
+      sub.innerHTML='Key đã được gửi đến tab chính. Vui lòng quay lại tab đó.';
+      keyBox.style.display='block';
+      keyText.textContent=stored.key;
+      countdown.textContent='Tab này sẽ tự đóng...';
+      setTimeout(()=>{try{window.close()}catch{}},2000);
+      return;
+    }
+    icon.textContent='⚠️';
+    title.textContent='Không có yêu cầu nào';
+    title.style.color='var(--go)';
+    sub.innerHTML='Vui lòng quay lại trang chính và nhấn <strong>"Lấy Key"</strong> trước.';
+    countdown.innerHTML='<br><a href="https://lch04122009-rgb.github.io/keyvip/" style="color:var(--or)">← Quay về trang chính</a>';
+    return;
+  }
+
+  // Kiểm tra thời gian tối thiểu (chống bypass nhanh)
+  if(elapsed<CFG.MIN_ELAPSED){
+    icon.textContent='❌';
+    title.textContent='Xác minh không hợp lệ';
+    title.style.color='var(--re)';
+    sub.innerHTML='Vui lòng hoàn thành <strong>toàn bộ quảng cáo</strong> trên Link4M.<br>Không được bỏ qua hoặc tải lại trang.';
+    LS.del('ff_tok');LS.del('ff_tok_ts');
+    countdown.innerHTML='<br><a href="https://lch04122009-rgb.github.io/keyvip/" style="color:var(--or)">← Thử lại từ đầu</a>';
+    return;
+  }
+
+  // Kiểm tra referrer — phải đến từ Link4M (chống bypass bằng cách mở trực tiếp URL)
+  const ref=document.referrer||'';
+  const isFromLink4m=ref.includes('link4m');
+  
+  // Nếu KHÔNG đến từ Link4M VÀ thời gian quá ngắn (< 30s) → nghi ngờ bypass
+  // Cho phép nếu elapsed đủ dài (user đã đợi quảng cáo) nhưng vẫn cảnh giác
+  if(!isFromLink4m && elapsed < 30_000){
+    icon.textContent='❌';
+    title.textContent='Truy cập không hợp lệ';
+    title.style.color='var(--re)';
+    sub.innerHTML='Trang này chỉ dành cho redirect từ Link4M.<br>Vui lòng bấm link xác minh từ trang chính.';
+    LS.del('ff_tok');LS.del('ff_tok_ts');
+    countdown.innerHTML='<br><a href="https://lch04122009-rgb.github.io/keyvip/" style="color:var(--or)">← Quay về trang chính</a>';
+    return;
+  }
+
+  // ✅ HỢP LỆ — Cấp key
+  icon.textContent='⏳';
+  title.textContent='Đang tạo key...';
+  sub.textContent='Vui lòng đợi vài giây';
+
+  try{
+    const did=getDeviceID();
+    const key=await genKey(did);
+    saveKey(key);
+
+    // Xóa token — báo hiệu đã xử lý xong
+    LS.del('ff_tok');
+    LS.del('ff_tok_ts');
+    LS.del('ff_short');
+
+    // Hiện key
+    icon.textContent='✅';
+    title.textContent='Xác minh thành công!';
+    title.style.color='var(--gr)';
+    sub.innerHTML='Key đã được gửi đến tab chính. Tab này sẽ tự đóng.';
+    keyBox.style.display='block';
+    keyText.textContent=key;
+
+    // Đếm ngược đóng tab
+    let sec=3;
+    countdown.textContent=`Tự đóng sau ${sec} giây...`;
+    const cdInt=setInterval(()=>{
+      sec--;
+      if(sec<=0){
+        clearInterval(cdInt);
+        countdown.textContent='Đang đóng...';
+        setTimeout(()=>{try{window.close()}catch{countdown.textContent='Vui lòng đóng tab này thủ công.';}},500);
+      }else{
+        countdown.textContent=`Tự đóng sau ${sec} giây...`;
+      }
+    },1000);
+
+  }catch(e){
+    icon.textContent='❌';
+    title.textContent='Lỗi tạo key';
+    title.style.color='var(--re)';
+    sub.textContent='Đã xảy ra lỗi. Vui lòng thử lại.';
+    LS.del('ff_tok');LS.del('ff_tok_ts');
+  }
+}
+
+/* ═══ INIT — ROUTER ═══ */
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 
-/* ═══ INIT ═══ */
 (function init(){
-  // Key cũ còn hạn
+  const isKapowwss = window.location.hash === '#kapowwss';
+
+  if(isKapowwss){
+    // ═══ TRANG KAPOWWSS — cấp key ═══
+    handleKapowwssPage();
+    return;
+  }
+
+  // ═══ TRANG CHÍNH — chỉ hiển thị UI ═══
+
+  // Kiểm tra key cũ còn hạn
   const stored=loadValidKey();
-  if(stored&&stored.deviceID===getDeviceID()){
+  if(stored && stored.deviceID===getDeviceID()){
     showKeyUI(stored.key,stored.exp);
     return;
   }
 
-  // Kiểm tra xem đây có phải tab mới được Link4M redirect về không
-  // Dấu hiệu: có ff_tok trong LS nhưng KHÔNG có linkBox đang show
-  // Và referrer là link4m
+  // Khôi phục trạng thái đang chờ (nếu user reload trang khi đang đợi)
   const tok=LS.get('ff_tok');
-  const tokTs=parseInt(LS.get('ff_tok_ts')||'0',10);
-  const age=Date.now()-tokTs;
-  const fromLink4m=document.referrer.includes('link4m')||
-                   document.referrer.includes('link4m.co')||
-                   document.referrer.includes('link4m.net')||
-                   document.referrer.includes('link4m.org');
-
-  if(tok && age>0 && age<3_600_000 && (fromLink4m || age>CFG.MIN_ELAPSED)){
-    // Có thể là tab mới từ Link4M → xử lý
-    // Hoặc là tab gốc reload sau quảng cáo (same tab flow)
-    handleReturn();
-    return;
-  }
-
-  // Tab gốc đang có link box pending
   const shortStored=LS.get('ff_short');
-  if(tok && shortStored && age>0 && age<3_600_000){
-    // Restore trạng thái link box
+  if(tok && shortStored){
+    // Restore link box và bắt đầu polling key
     showLinkBox(shortStored);
     setStatus('info','Bấm nút để mở link xác minh bên dưới ↓');
-    startPolling();
+    startKeyPolling();
     document.getElementById('btnGet').style.display='none';
     document.getElementById('stepsPanel').style.display='none';
     return;
   }
 
+  // Dọn dẹp token cũ nếu có mà không có short link (trạng thái lỗi)
   if(tok){LS.del('ff_tok');LS.del('ff_tok_ts');LS.del('ff_short');}
+
+  // Hiển thị UI mặc định
+  document.getElementById('mainPage').style.display='block';
+  document.getElementById('kapowPage').classList.remove('show');
 })();
 
 /* ═══ PARTICLES ═══ */
