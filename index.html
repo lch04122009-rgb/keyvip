@@ -282,7 +282,7 @@ body::before{
     </div>
   </div>
 
-  <div class="footer">Free Fire Key System v5.4 · Always Fresh Link & Key · Powered by Link4M</div>
+  <div class="footer">Free Fire Key System v5.5 · Unique Key Per Session · Powered by Link4M</div>
 </div>
 
 <script>
@@ -307,14 +307,53 @@ function getDeviceID(){
   return h.toString(16).toUpperCase().padStart(8,'0');
 }
 
-/* ═══ KEY GEN — luôn tạo key MỚI mỗi lần gọi ═══ */
-async function genKey(did){
-  const nonce=Array.from(crypto.getRandomValues(new Uint8Array(8)))
+/* ═══ RANDOM HELPERS ═══ */
+function randHex(bytes){
+  return Array.from(crypto.getRandomValues(new Uint8Array(bytes)))
     .map(b=>b.toString(16).padStart(2,'0')).join('');
-  const seed=CFG.SECRET+'|'+did+'|'+Date.now()+'|'+nonce;
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(seed));
-  const arr=Array.from(new Uint8Array(buf));
-  return Array.from({length:CFG.KEY_LEN},(_,i)=>CFG.KEY_CHARS[arr[i]%CFG.KEY_CHARS.length]).join('');
+}
+function randBase36(bytes){
+  return Array.from(crypto.getRandomValues(new Uint8Array(bytes)))
+    .map(b=>(b%36).toString(36)).join('');
+}
+
+/* ═══ KEY GEN — ĐẢM BẢO MỖI LẦN RA KEY MỚI 100% ═══
+   Seed bao gồm:
+   - SECRET (hằng số)
+   - deviceID (theo máy)
+   - sessionID (mỗi lần bấm "Lấy Key" tạo 1 cái mới, lưu LS)
+   - genCounter (tăng dần mỗi lần gen, lưu LS)
+   - timestamp (ms)
+   - nonce (random 16 bytes)
+   → Không thể trùng dù bấm liên tục */
+async function genKey(did, sessionID){
+  // Tăng counter
+  let counter = parseInt(LS.get('ff_gen_counter')||'0', 10) + 1;
+  LS.set('ff_gen_counter', String(counter));
+
+  const nonce = randHex(16);
+  const ts = Date.now();
+
+  const seed = [
+    CFG.SECRET,
+    did,
+    sessionID || 'no-session',
+    String(counter),
+    String(ts),
+    nonce
+  ].join('|');
+
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(seed));
+  const arr = Array.from(new Uint8Array(buf));
+
+  // Dùng nhiều byte hơn để tránh bias
+  let result = '';
+  for(let i = 0; i < CFG.KEY_LEN; i++){
+    // Kết hợp 2 byte để có distribution đều hơn
+    const val = (arr[i % arr.length] * 256 + arr[(i + 1) % arr.length]) % CFG.KEY_CHARS.length;
+    result += CFG.KEY_CHARS[val];
+  }
+  return result;
 }
 
 /* ═══ STORAGE ═══ */
@@ -325,11 +364,21 @@ const LS={
   getJ:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},
   setJ:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}},
 };
-function saveKey(key){LS.setJ('ff_key',{key,deviceID:getDeviceID(),exp:Date.now()+CFG.EXPIRE_MS,ts:Date.now()});}
+
+function saveKey(key, sessionID){
+  LS.setJ('ff_key',{
+    key,
+    deviceID: getDeviceID(),
+    sessionID: sessionID, // Lưu sessionID để biết key này thuộc lần lấy nào
+    exp: Date.now() + CFG.EXPIRE_MS,
+    ts: Date.now()
+  });
+}
+
 function loadValidKey(){
-  const d=LS.getJ('ff_key');
-  if(!d)return null;
-  if(Date.now()>=d.exp){LS.del('ff_key');return null;}
+  const d = LS.getJ('ff_key');
+  if(!d) return null;
+  if(Date.now() >= d.exp){ LS.del('ff_key'); return null; }
   return d;
 }
 
@@ -346,19 +395,17 @@ function clearStatus(){document.getElementById('status').className='status';}
 
 /* ═══ LINK4M API — luôn tạo link MỚI ═══ */
 async function createShortLink(){
-  const nonce=Array.from(crypto.getRandomValues(new Uint8Array(6)))
-    .map(b=>b.toString(36)).join('');
-  const ts=Date.now();
-
-  const destUrl=`${CFG.BASE_URL}?_t=${ts}&_r=${nonce}#kapowwss`;
-  const apiUrl=`https://link4m.co/api-shorten/v2?api=${CFG.API_TOKEN}&url=${encodeURIComponent(destUrl)}`;
+  const nonce = randBase36(6);
+  const ts = Date.now();
+  const destUrl = `${CFG.BASE_URL}?_t=${ts}&_r=${nonce}#kapowwss`;
+  const apiUrl = `https://link4m.co/api-shorten/v2?api=${CFG.API_TOKEN}&url=${encodeURIComponent(destUrl)}`;
 
   try{
-    const r=await fetch(apiUrl,{method:'GET',cache:'no-store'});
+    const r = await fetch(apiUrl, {method:'GET', cache:'no-store'});
     if(r.ok){
-      const d=await r.json();
-      const link=d.shortenedUrl||d.short_link||d.url||(d.status==='success'&&d.data?.url)||null;
-      if(link)return link;
+      const d = await r.json();
+      const link = d.shortenedUrl||d.short_link||d.url||(d.status==='success'&&d.data?.url)||null;
+      if(link) return link;
       throw new Error(d.message||d.error||'API không trả link');
     }
     throw new Error('API trả về lỗi HTTP '+r.status);
@@ -369,48 +416,58 @@ async function createShortLink(){
     ];
     for(const proxy of proxies){
       try{
-        const r=await fetch(proxy,{method:'GET',cache:'no-store'});
-        if(!r.ok)continue;
-        const raw=await r.json();
-        const text=raw.contents||raw;
-        const d=typeof text==='string'?JSON.parse(text):text;
-        const link=d.shortenedUrl||d.short_link||d.url||(d.status==='success'&&d.data?.url)||null;
-        if(link)return link;
+        const r = await fetch(proxy, {method:'GET', cache:'no-store'});
+        if(!r.ok) continue;
+        const raw = await r.json();
+        const text = raw.contents||raw;
+        const d = typeof text==='string'?JSON.parse(text):text;
+        const link = d.shortenedUrl||d.short_link||d.url||(d.status==='success'&&d.data?.url)||null;
+        if(link) return link;
       }catch{}
     }
     throw new Error('Không thể tạo link. Kiểm tra kết nối mạng.');
   }
 }
 
-/* ═══ MAIN PAGE LOGIC ═══ */
+/* ══════════════════════════════════════════
+   ║  MAIN PAGE LOGIC                      ║
+   ╚═════════════════════════════════════════ */
+
 async function startFlow(){
-  const btn=document.getElementById('btnGet');
-  btn.disabled=true;
-  btn.innerHTML='⏳ Đang gọi API tạo link mới...';
-  setStatus('loading','Đang tạo link xác minh MỚI từ API...');
+  const btn = document.getElementById('btnGet');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Đang gọi API tạo link mới...';
+  setStatus('loading','Đang tạo phiên lấy key MỚI...');
 
   try{
-    LS.del('ff_key');
-    LS.del('ff_tok');
+    // ★★★ XÓA SẠCH TRẠNG THÁI CŨ ★★★
+    LS.del('ff_key');        // Xóa key cũ
+    LS.del('ff_tok');        // Xóa token cũ
     LS.del('ff_tok_ts');
     LS.del('ff_short');
+    LS.del('ff_session');    // Xóa session cũ
 
-    const tok=Array.from(crypto.getRandomValues(new Uint8Array(20)))
-      .map(b=>b.toString(16).padStart(2,'0')).join('');
-    LS.set('ff_tok',tok);
-    LS.set('ff_tok_ts',String(Date.now()));
+    // ★★★ TẠO SESSION MỚI — mỗi lần bấm "Lấy Key" là 1 session mới ★★★
+    const sessionID = randHex(16); // 32 ký tự hex, duy nhất
+    LS.set('ff_session', sessionID);
 
-    const shortLink=await createShortLink();
-    LS.set('ff_short',shortLink);
+    // Tạo token xác minh
+    const tok = randHex(20);
+    LS.set('ff_tok', tok);
+    LS.set('ff_tok_ts', String(Date.now()));
+
+    // Gọi API tạo link MỚI (mỗi lần gọi URL destination khác nhau)
+    const shortLink = await createShortLink();
+    LS.set('ff_short', shortLink);
 
     showLinkBox(shortLink);
     clearStatus();
-    btn.innerHTML='⚡ Lấy Key Free Fire Miễn Phí';
+    btn.innerHTML = '⚡ Lấy Key Free Fire Miễn Phí';
 
   }catch(e){
     setStatus('error','Lỗi: '+e.message);
-    btn.disabled=false;
-    btn.innerHTML='⚡ Lấy Key Free Fire Miễn Phí';
+    btn.disabled = false;
+    btn.innerHTML = '⚡ Lấy Key Free Fire Miễn Phí';
     LS.del('ff_tok');LS.del('ff_tok_ts');
   }
 }
@@ -419,189 +476,219 @@ function showLinkBox(link){
   document.getElementById('btnGet').style.display='none';
   document.getElementById('stepsPanel').style.display='none';
 
-  const lb=document.getElementById('linkBox');
-  document.getElementById('linkText').textContent=link;
-  document.getElementById('linkOpenBtn').href=link;
+  const lb = document.getElementById('linkBox');
+  document.getElementById('linkText').textContent = link;
+  document.getElementById('linkOpenBtn').href = link;
   lb.classList.add('show');
 
   setStatus('info','Link MỚI đã được tạo. Bấm nút để mở xác minh ↓');
 }
 
 function onOpenLink(){
-  setStatus('loading','Đang chờ bạn hoàn thành xác minh... Key sẽ tự hiện tại tab này.');
+  setStatus('loading','Đang chờ bạn hoàn thành xác minh... Key MỚI sẽ tự hiện tại tab này.');
   startKeyPolling();
 }
 
-let pollInt=null;
-let pollTimeout=null;
+let pollInt = null;
+let pollTimeout = null;
 function startKeyPolling(){
   clearInterval(pollInt);
   clearTimeout(pollTimeout);
 
-  pollInt=setInterval(()=>{
-    const stored=loadValidKey();
-    if(stored && stored.deviceID===getDeviceID()){
+  const currentSession = LS.get('ff_session'); // Lưu session hiện tại để so sánh
+
+  pollInt = setInterval(()=>{
+    const stored = loadValidKey();
+    // Chỉ hiện key nếu:
+    // 1. Key hợp lệ
+    // 2. Cùng device
+    // 3. Cùng session (đảm bảo đây là key của lần lấy này, không phải key cũ)
+    if(stored && stored.deviceID === getDeviceID() && stored.sessionID === currentSession){
       clearInterval(pollInt);
       clearTimeout(pollTimeout);
-      showKeyUI(stored.key,stored.exp);
+      showKeyUI(stored.key, stored.exp);
     }
-  },1000);
+  }, 1000);
 
-  pollTimeout=setTimeout(()=>{
+  pollTimeout = setTimeout(()=>{
     clearInterval(pollInt);
-    const stored=loadValidKey();
-    if(!stored){
+    const stored = loadValidKey();
+    if(!stored || stored.sessionID !== LS.get('ff_session')){
       setStatus('error','Hết thời gian chờ. Vui lòng thử lại.');
       resetFlow();
     }
-  },300_000);
+  }, 300_000);
 }
 
-function showKeyUI(key,exp){
-  document.getElementById('keyText').textContent=key;
+function showKeyUI(key, exp){
+  document.getElementById('keyText').textContent = key;
   document.getElementById('keyBox').classList.add('show');
   document.getElementById('timerBar').classList.add('show');
-  document.getElementById('btnReset').style.display='flex';
-  document.getElementById('getPanel').style.display='none';
+  document.getElementById('btnReset').style.display = 'flex';
+  document.getElementById('getPanel').style.display = 'none';
   clearStatus();
   setStatus('success','Xác minh thành công! Key MỚI đã được cấp.');
   startTimer(exp);
 }
 
-let timerInt=null;
+let timerInt = null;
 function startTimer(exp){
   clearInterval(timerInt);
-  const el=document.getElementById('timerVal');
+  const el = document.getElementById('timerVal');
   function tick(){
-    const d=Math.max(0,exp-Date.now());
-    if(d===0){LS.del('ff_key');el.className='timer-val expired';el.textContent='Hết hạn';clearInterval(timerInt);setTimeout(resetFlow,2000);return;}
-    const h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);
-    el.textContent=`${pad(h)}:${pad(m)}:${pad(s)}`;
+    const d = Math.max(0, exp - Date.now());
+    if(d === 0){
+      LS.del('ff_key');
+      el.className = 'timer-val expired';
+      el.textContent = 'Hết hạn';
+      clearInterval(timerInt);
+      setTimeout(resetFlow, 2000);
+      return;
+    }
+    const h = Math.floor(d/3600000), m = Math.floor((d%3600000)/60000), s = Math.floor((d%60000)/1000);
+    el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
   }
-  tick();timerInt=setInterval(tick,1000);
+  tick();
+  timerInt = setInterval(tick, 1000);
 }
-const pad=n=>String(n).padStart(2,'0');
+const pad = n => String(n).padStart(2,'0');
 
 function copyKey(){
-  const key=document.getElementById('keyText').textContent;
-  if(!key||key==='—')return;
+  const key = document.getElementById('keyText').textContent;
+  if(!key || key === '—') return;
   navigator.clipboard.writeText(key).then(()=>{
-    const b=document.getElementById('copyBtn');
-    b.textContent='✓ Copied';b.classList.add('copied');
-    setTimeout(()=>{b.textContent='Copy';b.classList.remove('copied');},2000);
+    const b = document.getElementById('copyBtn');
+    b.textContent = '✓ Copied';
+    b.classList.add('copied');
+    setTimeout(()=>{b.textContent='Copy';b.classList.remove('copied');}, 2000);
   });
 }
 
 function resetFlow(){
-  clearInterval(timerInt);clearInterval(pollInt);clearTimeout(pollTimeout);
-  LS.del('ff_key');LS.del('ff_tok');LS.del('ff_tok_ts');LS.del('ff_short');
+  clearInterval(timerInt);
+  clearInterval(pollInt);
+  clearTimeout(pollTimeout);
+
+  // ★★★ XÓA TOÀN BỘ — lần bấm "Lấy Key" tiếp theo sẽ tạo session + key mới ★★★
+  LS.del('ff_key');
+  LS.del('ff_tok');
+  LS.del('ff_tok_ts');
+  LS.del('ff_short');
+  LS.del('ff_session');
+  // KHÔNG xóa ff_gen_counter — giữ lại để đảm bảo key mới luôn khác
+
   document.getElementById('keyBox').classList.remove('show');
   document.getElementById('timerBar').classList.remove('show');
-  document.getElementById('timerVal').className='timer-val';
-  document.getElementById('btnReset').style.display='none';
-  document.getElementById('getPanel').style.display='block';
-  document.getElementById('stepsPanel').style.display='flex';
-  document.getElementById('btnGet').style.display='flex';
-  document.getElementById('btnGet').disabled=false;
-  document.getElementById('btnGet').innerHTML='⚡ Lấy Key Free Fire Miễn Phí';
+  document.getElementById('timerVal').className = 'timer-val';
+  document.getElementById('btnReset').style.display = 'none';
+  document.getElementById('getPanel').style.display = 'block';
+  document.getElementById('stepsPanel').style.display = 'flex';
+  document.getElementById('btnGet').style.display = 'flex';
+  document.getElementById('btnGet').disabled = false;
+  document.getElementById('btnGet').innerHTML = '⚡ Lấy Key Free Fire Miễn Phí';
   document.getElementById('linkBox').classList.remove('show');
   clearStatus();
 }
 
-/* ═══ KAPOWWSS PAGE LOGIC ═══ */
+/* ══════════════════════════════════════════════
+   ║  KAPOWWSS PAGE LOGIC (#kapowwss)          ║
+   ╚═════════════════════════════════════════════ */
+
 async function handleKapowwssPage(){
-  document.getElementById('mainPage').style.display='none';
+  document.getElementById('mainPage').style.display = 'none';
   document.getElementById('kapowPage').classList.add('show');
 
-  const icon=document.getElementById('kapowIcon');
-  const title=document.getElementById('kapowTitle');
-  const sub=document.getElementById('kapowSub');
-  const keyBox=document.getElementById('kapowKeyBox');
-  const keyText=document.getElementById('kapowKeyText');
-  const note=document.getElementById('kapowNote');
+  const icon = document.getElementById('kapowIcon');
+  const title = document.getElementById('kapowTitle');
+  const sub = document.getElementById('kapowSub');
+  const keyBox = document.getElementById('kapowKeyBox');
+  const keyText = document.getElementById('kapowKeyText');
+  const note = document.getElementById('kapowNote');
 
-  const tok=LS.get('ff_tok');
-  const tokTs=parseInt(LS.get('ff_tok_ts')||'0',10);
-  const elapsed=Date.now()-tokTs;
+  const tok = LS.get('ff_tok');
+  const tokTs = parseInt(LS.get('ff_tok_ts')||'0', 10);
+  const elapsed = Date.now() - tokTs;
+  const sessionID = LS.get('ff_session'); // Đọc session hiện tại
 
   if(!tok){
-    const stored=loadValidKey();
+    const stored = loadValidKey();
     if(stored){
-      icon.textContent='✅';
-      title.textContent='Key đã được cấp!';
-      title.style.color='var(--gr)';
-      sub.innerHTML='Key đã được gửi đến tab chính. Vui lòng quay lại tab đó để xem.';
-      keyBox.style.display='block';
-      keyText.textContent=stored.key;
-      note.innerHTML='<strong>Tab này có thể đóng thủ công.</strong><br><br><a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
+      icon.textContent = '✅';
+      title.textContent = 'Key đã được cấp!';
+      title.style.color = 'var(--gr)';
+      sub.innerHTML = 'Key đã được gửi đến tab chính. Vui lòng quay lại tab đó để xem.';
+      keyBox.style.display = 'block';
+      keyText.textContent = stored.key;
+      note.innerHTML = '<strong>Tab này có thể đóng thủ công.</strong><br><br><a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
       return;
     }
-    icon.textContent='⚠️';
-    title.textContent='Không có yêu cầu nào';
-    title.style.color='var(--go)';
-    sub.innerHTML='Vui lòng quay lại trang chính và nhấn <strong>"Lấy Key"</strong> trước.';
-    note.innerHTML='<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
+    icon.textContent = '⚠️';
+    title.textContent = 'Không có yêu cầu nào';
+    title.style.color = 'var(--go)';
+    sub.innerHTML = 'Vui lòng quay lại trang chính và nhấn <strong>"Lấy Key"</strong> trước.';
+    note.innerHTML = '<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
     return;
   }
 
-  if(elapsed<CFG.MIN_ELAPSED){
-    icon.textContent='❌';
-    title.textContent='Xác minh không hợp lệ';
-    title.style.color='var(--re)';
-    sub.innerHTML='Vui lòng hoàn thành <strong>toàn bộ quảng cáo</strong> trên Link4M.<br>Không được bỏ qua hoặc tải lại trang.';
+  if(elapsed < CFG.MIN_ELAPSED){
+    icon.textContent = '❌';
+    title.textContent = 'Xác minh không hợp lệ';
+    title.style.color = 'var(--re)';
+    sub.innerHTML = 'Vui lòng hoàn thành <strong>toàn bộ quảng cáo</strong> trên Link4M.<br>Không được bỏ qua hoặc tải lại trang.';
     LS.del('ff_tok');LS.del('ff_tok_ts');
-    note.innerHTML='<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Thử lại từ đầu</a>';
+    note.innerHTML = '<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Thử lại từ đầu</a>';
     return;
   }
 
-  const ref=document.referrer||'';
-  const isFromLink4m=ref.includes('link4m');
+  const ref = document.referrer || '';
+  const isFromLink4m = ref.includes('link4m');
 
   if(!isFromLink4m && elapsed < 30_000){
-    icon.textContent='❌';
-    title.textContent='Truy cập không hợp lệ';
-    title.style.color='var(--re)';
-    sub.innerHTML='Trang này chỉ dành cho redirect từ Link4M.<br>Vui lòng bấm link xác minh từ trang chính.';
+    icon.textContent = '❌';
+    title.textContent = 'Truy cập không hợp lệ';
+    title.style.color = 'var(--re)';
+    sub.innerHTML = 'Trang này chỉ dành cho redirect từ Link4M.<br>Vui lòng bấm link xác minh từ trang chính.';
     LS.del('ff_tok');LS.del('ff_tok_ts');
-    note.innerHTML='<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
+    note.innerHTML = '<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
     return;
   }
 
-  icon.textContent='⏳';
-  title.textContent='Đang tạo key MỚI...';
-  sub.textContent='Vui lòng đợi vài giây';
+  icon.textContent = '⏳';
+  title.textContent = 'Đang tạo key MỚI...';
+  sub.textContent = 'Vui lòng đợi vài giây';
 
   try{
-    const did=getDeviceID();
-    const key=await genKey(did);
-    saveKey(key);
+    const did = getDeviceID();
+    // ★★★ genKey() nhận sessionID → đảm bảo key của session này khác tất cả session khác ★★★
+    const key = await genKey(did, sessionID);
+    saveKey(key, sessionID);
 
     LS.del('ff_tok');
     LS.del('ff_tok_ts');
     LS.del('ff_short');
 
-    icon.textContent='✅';
-    title.textContent='Xác minh thành công!';
-    title.style.color='var(--gr)';
-    sub.innerHTML='Key MỚI đã được gửi đến tab chính.';
-    keyBox.style.display='block';
-    keyText.textContent=key;
+    icon.textContent = '✅';
+    title.textContent = 'Xác minh thành công!';
+    title.style.color = 'var(--gr)';
+    sub.innerHTML = 'Key MỚI đã được gửi đến tab chính.';
+    keyBox.style.display = 'block';
+    keyText.textContent = key;
 
-    note.innerHTML='<strong>Quay lại tab chính</strong> để xem và copy key.<br><br><a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
+    note.innerHTML = '<strong>Quay lại tab chính</strong> để xem và copy key.<br><br><a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
 
   }catch(e){
-    icon.textContent='❌';
-    title.textContent='Lỗi tạo key';
-    title.style.color='var(--re)';
-    sub.textContent='Đã xảy ra lỗi. Vui lòng thử lại.';
+    icon.textContent = '❌';
+    title.textContent = 'Lỗi tạo key';
+    title.style.color = 'var(--re)';
+    sub.textContent = 'Đã xảy ra lỗi. Vui lòng thử lại.';
     LS.del('ff_tok');LS.del('ff_tok_ts');
-    note.innerHTML='<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
+    note.innerHTML = '<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
   }
 }
 
 /* ═══ INIT — ROUTER ═══ */
 (function init(){
-  const hash=window.location.hash;
+  const hash = window.location.hash;
   const isKapowwss = hash === '#kapowwss' || hash.includes('kapowwss');
 
   if(isKapowwss){
@@ -609,26 +696,43 @@ async function handleKapowwssPage(){
     return;
   }
 
-  const stored=loadValidKey();
-  if(stored && stored.deviceID===getDeviceID()){
-    showKeyUI(stored.key,stored.exp);
+  // TRANG CHÍNH
+  const stored = loadValidKey();
+  const currentSession = LS.get('ff_session');
+
+  // Chỉ hiện key cũ nếu:
+  // 1. Key hợp lệ
+  // 2. Cùng device
+  // 3. Có session (key được tạo từ flow "Lấy Key")
+  // 4. Session của key trùng với session hiện tại (chưa bị reset)
+  if(stored && stored.deviceID === getDeviceID() && stored.sessionID && stored.sessionID === currentSession){
+    showKeyUI(stored.key, stored.exp);
     return;
   }
 
-  LS.del('ff_tok');
-  LS.del('ff_tok_ts');
-  LS.del('ff_short');
+  // Nếu key cũ không cùng session → đã bị reset → xóa và về UI mặc định
+  if(stored && stored.sessionID !== currentSession){
+    LS.del('ff_key');
+  }
 
-  document.getElementById('mainPage').style.display='block';
+  // Dọn dẹp token cũ nếu không có session (trạng thái lỗi)
+  if(!currentSession){
+    LS.del('ff_tok');
+    LS.del('ff_tok_ts');
+    LS.del('ff_short');
+  }
+
+  document.getElementById('mainPage').style.display = 'block';
   document.getElementById('kapowPage').classList.remove('show');
 })();
 
 /* ═══ PARTICLES ═══ */
 (function(){
-  const c=document.getElementById('pts');
-  for(let i=0;i<25;i++){
-    const p=document.createElement('div');p.className='pt';
-    p.style.cssText=[`left:${Math.random()*100}%`,`width:${Math.random()>.7?3:2}px`,
+  const c = document.getElementById('pts');
+  for(let i = 0; i < 25; i++){
+    const p = document.createElement('div');
+    p.className = 'pt';
+    p.style.cssText = [`left:${Math.random()*100}%`,`width:${Math.random()>.7?3:2}px`,
       `height:${Math.random()>.7?3:2}px`,`animation-duration:${8+Math.random()*14}s`,
       `animation-delay:${Math.random()*12}s`,
       `background:${Math.random()>.5?'#f97316':'#f59e0b'}`].join(';');
@@ -636,11 +740,11 @@ async function handleKapowwssPage(){
   }
 })();
 
-document.addEventListener('keydown',e=>{
-  if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&'IJC'.includes(e.key))||(e.ctrlKey&&e.key==='U'))
+document.addEventListener('keydown', e => {
+  if(e.key === 'F12' || (e.ctrlKey && e.shiftKey && 'IJC'.includes(e.key)) || (e.ctrlKey && e.key === 'U'))
     e.preventDefault();
 });
-document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('contextmenu', e => e.preventDefault());
 </script>
 </body>
 </html>
