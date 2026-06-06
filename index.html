@@ -57,6 +57,7 @@ body::before{
 .status.success{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:var(--gr)}
 .status.error{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);color:var(--re)}
 .status.info{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);color:var(--go)}
+.status.warning{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);color:var(--go)}
 .spinner{width:14px;height:14px;flex-shrink:0;border:2px solid rgba(249,115,22,.2);border-top-color:var(--or);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .timer-bar{
@@ -77,14 +78,27 @@ body::before{
   background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.2);
   border-radius:10px;padding:14px 16px;
 }
+.key-inner.used{
+  background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);
+}
 .key-text{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;color:var(--gr);letter-spacing:2px;flex:1;word-break:break-all}
-.copy-btn{
+.key-text.used{color:var(--re);text-decoration:line-through;opacity:.6}
+.key-actions{display:flex;gap:8px;flex-wrap:wrap}
+.copy-btn,.use-btn{
   background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);
   border-radius:7px;padding:8px 14px;color:var(--gr);font-size:12px;font-weight:600;
   cursor:pointer;transition:all .2s;white-space:nowrap;font-family:'Inter',sans-serif;
 }
-.copy-btn:hover{background:rgba(34,197,94,.18)}
+.copy-btn:hover,.use-btn:hover{background:rgba(34,197,94,.18)}
 .copy-btn.copied{background:rgba(34,197,94,.25)}
+.use-btn{
+  background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.25);color:var(--or);
+}
+.use-btn:hover{background:rgba(249,115,22,.18)}
+.use-btn.used{
+  background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--re);
+  cursor:not-allowed;
+}
 .info-box{
   display:flex;align-items:flex-start;gap:12px;
   background:var(--sur2);border:1px solid var(--bd2);
@@ -153,7 +167,7 @@ body::before{
   border-radius:20px;padding:4px 10px;font-size:11px;color:var(--tx3);letter-spacing:.5px;
 }
 .bdot{width:5px;height:5px;border-radius:50%;background:var(--tx3)}
-.bdot.g{background:var(--gr)}.bdot.o{background:var(--or)}
+.bdot.g{background:var(--gr)}.bdot.o{background:var(--or)}.bdot.r{background:var(--re)}
 
 .kapowwss-page{display:none;text-align:center;padding:20px 0}
 .kapowwss-page.show{display:block}
@@ -204,7 +218,7 @@ body::before{
   <div class="header">
     <div class="chip"><div class="chip-dot"></div>Free Fire · Key System</div>
     <div class="title">Key Access <span>System</span></div>
-    <div class="subtitle">SECURE · ANTI-BYPASS · VALID 24H</div>
+    <div class="subtitle">SECURE · ONE-TIME USE · FRESH KEY</div>
   </div>
 
   <div class="card">
@@ -217,10 +231,13 @@ body::before{
       </div>
 
       <div class="key-box" id="keyBox">
-        <div class="key-label">🔑 Key hợp lệ · Device Locked</div>
-        <div class="key-inner">
+        <div class="key-label">🔑 Key hợp lệ · Single Use</div>
+        <div class="key-inner" id="keyInner">
           <div class="key-text" id="keyText">—</div>
-          <button class="copy-btn" id="copyBtn" onclick="copyKey()">Copy</button>
+          <div class="key-actions">
+            <button class="copy-btn" id="copyBtn" onclick="copyKey()">Copy</button>
+            <button class="use-btn" id="useBtn" onclick="useKey()">✓ Đã sử dụng</button>
+          </div>
         </div>
       </div>
 
@@ -229,7 +246,8 @@ body::before{
           <div class="info-icon">🎮</div>
           <div class="info-text">
             Nhận <strong>Key Free Fire</strong> miễn phí ngay bây giờ.<br>
-            Chỉ cần <strong>1 bước xác minh nhanh</strong> — key hợp lệ <strong>24 giờ</strong>.
+            <strong>⚠️ Mỗi key chỉ kích hoạt được 1 lần duy nhất.</strong><br>
+            Bạn có thể lấy key mới bất cứ lúc nào.
           </div>
         </div>
 
@@ -264,8 +282,8 @@ body::before{
       <div class="divider"></div>
       <div class="badges">
         <div class="badge"><div class="bdot g"></div>Anti-Bypass</div>
-        <div class="badge"><div class="bdot o"></div>Device Lock</div>
-        <div class="badge"><div class="bdot"></div>One-Time Token</div>
+        <div class="badge"><div class="bdot o"></div>Fresh Link</div>
+        <div class="badge"><div class="bdot r"></div>One-Time Use</div>
         <div class="badge"><div class="bdot g"></div>24H Auto-Delete</div>
       </div>
     </div>
@@ -282,7 +300,7 @@ body::before{
     </div>
   </div>
 
-  <div class="footer">Free Fire Key System v5.5 · Unique Key Per Session · Powered by Link4M</div>
+  <div class="footer">Free Fire Key System v6.1 · One-Time Use · Powered by Link4M</div>
 </div>
 
 <script>
@@ -317,17 +335,8 @@ function randBase36(bytes){
     .map(b=>(b%36).toString(36)).join('');
 }
 
-/* ═══ KEY GEN — ĐẢM BẢO MỖI LẦN RA KEY MỚI 100% ═══
-   Seed bao gồm:
-   - SECRET (hằng số)
-   - deviceID (theo máy)
-   - sessionID (mỗi lần bấm "Lấy Key" tạo 1 cái mới, lưu LS)
-   - genCounter (tăng dần mỗi lần gen, lưu LS)
-   - timestamp (ms)
-   - nonce (random 16 bytes)
-   → Không thể trùng dù bấm liên tục */
+/* ═══ KEY GEN ═══ */
 async function genKey(did, sessionID){
-  // Tăng counter
   let counter = parseInt(LS.get('ff_gen_counter')||'0', 10) + 1;
   LS.set('ff_gen_counter', String(counter));
 
@@ -346,10 +355,8 @@ async function genKey(did, sessionID){
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(seed));
   const arr = Array.from(new Uint8Array(buf));
 
-  // Dùng nhiều byte hơn để tránh bias
   let result = '';
   for(let i = 0; i < CFG.KEY_LEN; i++){
-    // Kết hợp 2 byte để có distribution đều hơn
     const val = (arr[i % arr.length] * 256 + arr[(i + 1) % arr.length]) % CFG.KEY_CHARS.length;
     result += CFG.KEY_CHARS[val];
   }
@@ -365,14 +372,26 @@ const LS={
   setJ:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}},
 };
 
+/* ═══ KEY MANAGEMENT ═══ */
 function saveKey(key, sessionID){
   LS.setJ('ff_key',{
     key,
     deviceID: getDeviceID(),
-    sessionID: sessionID, // Lưu sessionID để biết key này thuộc lần lấy nào
+    sessionID: sessionID,
     exp: Date.now() + CFG.EXPIRE_MS,
-    ts: Date.now()
+    ts: Date.now(),
+    used: false 
   });
+}
+
+function markKeyAsUsed(){
+  const d = LS.getJ('ff_key');
+  if(d){
+    d.used = true;
+    d.usedAt = Date.now();
+    LS.setJ('ff_key', d);
+    // Lưu ý: KHÔNG thêm vào blacklist, cho phép user lấy key mới bình thường
+  }
 }
 
 function loadValidKey(){
@@ -385,7 +404,7 @@ function loadValidKey(){
 /* ═══ STATUS ═══ */
 function setStatus(type,msg){
   const el=document.getElementById('status');
-  const icon={loading:'',success:'✅',error:'❌',info:'ℹ️'}[type]||'';
+  const icon={loading:'',success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'}[type]||'';
   el.className='status show '+type;
   el.innerHTML=type==='loading'
     ?`<div class="spinner"></div><span>${msg}</span>`
@@ -393,7 +412,7 @@ function setStatus(type,msg){
 }
 function clearStatus(){document.getElementById('status').className='status';}
 
-/* ═══ LINK4M API — luôn tạo link MỚI ═══ */
+/* ═══ LINK4M API ═══ */
 async function createShortLink(){
   const nonce = randBase36(6);
   const ts = Date.now();
@@ -429,34 +448,29 @@ async function createShortLink(){
   }
 }
 
-/* ══════════════════════════════════════════
-   ║  MAIN PAGE LOGIC                      ║
-   ╚═════════════════════════════════════════ */
-
+/* ═══ MAIN PAGE LOGIC ═══ */
 async function startFlow(){
+  // Đã XÓA cơ chế checkDeviceLimit() -> Không cấm thiết bị
+  
   const btn = document.getElementById('btnGet');
   btn.disabled = true;
   btn.innerHTML = '⏳ Đang gọi API tạo link mới...';
   setStatus('loading','Đang tạo phiên lấy key MỚI...');
 
   try{
-    // ★★★ XÓA SẠCH TRẠNG THÁI CŨ ★★★
-    LS.del('ff_key');        // Xóa key cũ
-    LS.del('ff_tok');        // Xóa token cũ
+    LS.del('ff_key');
+    LS.del('ff_tok');
     LS.del('ff_tok_ts');
     LS.del('ff_short');
-    LS.del('ff_session');    // Xóa session cũ
+    LS.del('ff_session');
 
-    // ★★★ TẠO SESSION MỚI — mỗi lần bấm "Lấy Key" là 1 session mới ★★★
-    const sessionID = randHex(16); // 32 ký tự hex, duy nhất
+    const sessionID = randHex(16);
     LS.set('ff_session', sessionID);
 
-    // Tạo token xác minh
     const tok = randHex(20);
     LS.set('ff_tok', tok);
     LS.set('ff_tok_ts', String(Date.now()));
 
-    // Gọi API tạo link MỚI (mỗi lần gọi URL destination khác nhau)
     const shortLink = await createShortLink();
     LS.set('ff_short', shortLink);
 
@@ -495,15 +509,11 @@ function startKeyPolling(){
   clearInterval(pollInt);
   clearTimeout(pollTimeout);
 
-  const currentSession = LS.get('ff_session'); // Lưu session hiện tại để so sánh
+  const currentSession = LS.get('ff_session');
 
   pollInt = setInterval(()=>{
     const stored = loadValidKey();
-    // Chỉ hiện key nếu:
-    // 1. Key hợp lệ
-    // 2. Cùng device
-    // 3. Cùng session (đảm bảo đây là key của lần lấy này, không phải key cũ)
-    if(stored && stored.deviceID === getDeviceID() && stored.sessionID === currentSession){
+    if(stored && stored.deviceID === getDeviceID() && stored.sessionID === currentSession && !stored.used){
       clearInterval(pollInt);
       clearTimeout(pollTimeout);
       showKeyUI(stored.key, stored.exp);
@@ -513,7 +523,7 @@ function startKeyPolling(){
   pollTimeout = setTimeout(()=>{
     clearInterval(pollInt);
     const stored = loadValidKey();
-    if(!stored || stored.sessionID !== LS.get('ff_session')){
+    if(!stored || stored.sessionID !== LS.get('ff_session') || stored.used){
       setStatus('error','Hết thời gian chờ. Vui lòng thử lại.');
       resetFlow();
     }
@@ -521,14 +531,66 @@ function startKeyPolling(){
 }
 
 function showKeyUI(key, exp){
+  const stored = loadValidKey();
+  const isUsed = stored && stored.used;
+
   document.getElementById('keyText').textContent = key;
   document.getElementById('keyBox').classList.add('show');
   document.getElementById('timerBar').classList.add('show');
   document.getElementById('btnReset').style.display = 'flex';
   document.getElementById('getPanel').style.display = 'none';
-  clearStatus();
-  setStatus('success','Xác minh thành công! Key MỚI đã được cấp.');
+
+  const keyInner = document.getElementById('keyInner');
+  const keyText = document.getElementById('keyText');
+  const useBtn = document.getElementById('useBtn');
+
+  if(isUsed){
+    keyInner.classList.add('used');
+    keyText.classList.add('used');
+    useBtn.classList.add('used');
+    useBtn.textContent = '✗ Đã sử dụng';
+    useBtn.disabled = true;
+    setStatus('warning','⚠️ Key này đã được đánh dấu là đã sử dụng. Bạn có thể bấm "Lấy key mới" bên dưới.');
+  }else{
+    keyInner.classList.remove('used');
+    keyText.classList.remove('used');
+    useBtn.classList.remove('used');
+    useBtn.textContent = '✓ Đã sử dụng';
+    useBtn.disabled = false;
+    clearStatus();
+    setStatus('success','Xác minh thành công! Key MỚI đã được cấp.');
+  }
+
   startTimer(exp);
+}
+
+/* ═══ SỬ DỤNG KEY ═══ */
+function useKey(){
+  const stored = loadValidKey();
+  if(!stored){
+    setStatus('error','Không tìm thấy key.');
+    return;
+  }
+
+  if(stored.used){
+    setStatus('warning','Key này đã được đánh dấu là đã sử dụng rồi.');
+    return;
+  }
+
+  // Đánh dấu key đã sử dụng (chỉ mang tính chất lưu trữ local)
+  markKeyAsUsed();
+
+  const keyInner = document.getElementById('keyInner');
+  const keyText = document.getElementById('keyText');
+  const useBtn = document.getElementById('useBtn');
+
+  keyInner.classList.add('used');
+  keyText.classList.add('used');
+  useBtn.classList.add('used');
+  useBtn.textContent = '✗ Đã sử dụng';
+  useBtn.disabled = true;
+
+  setStatus('success','✅ Key đã được đánh dấu là đã sử dụng. Bạn có thể bấm "🔄 Lấy key mới" nếu cần thêm.');
 }
 
 let timerInt = null;
@@ -569,13 +631,11 @@ function resetFlow(){
   clearInterval(pollInt);
   clearTimeout(pollTimeout);
 
-  // ★★★ XÓA TOÀN BỘ — lần bấm "Lấy Key" tiếp theo sẽ tạo session + key mới ★★★
   LS.del('ff_key');
   LS.del('ff_tok');
   LS.del('ff_tok_ts');
   LS.del('ff_short');
   LS.del('ff_session');
-  // KHÔNG xóa ff_gen_counter — giữ lại để đảm bảo key mới luôn khác
 
   document.getElementById('keyBox').classList.remove('show');
   document.getElementById('timerBar').classList.remove('show');
@@ -590,10 +650,7 @@ function resetFlow(){
   clearStatus();
 }
 
-/* ══════════════════════════════════════════════
-   ║  KAPOWWSS PAGE LOGIC (#kapowwss)          ║
-   ╚═════════════════════════════════════════════ */
-
+/* ═══ KAPOWWSS PAGE LOGIC ═══ */
 async function handleKapowwssPage(){
   document.getElementById('mainPage').style.display = 'none';
   document.getElementById('kapowPage').classList.add('show');
@@ -608,7 +665,7 @@ async function handleKapowwssPage(){
   const tok = LS.get('ff_tok');
   const tokTs = parseInt(LS.get('ff_tok_ts')||'0', 10);
   const elapsed = Date.now() - tokTs;
-  const sessionID = LS.get('ff_session'); // Đọc session hiện tại
+  const sessionID = LS.get('ff_session');
 
   if(!tok){
     const stored = loadValidKey();
@@ -659,7 +716,6 @@ async function handleKapowwssPage(){
 
   try{
     const did = getDeviceID();
-    // ★★★ genKey() nhận sessionID → đảm bảo key của session này khác tất cả session khác ★★★
     const key = await genKey(did, sessionID);
     saveKey(key, sessionID);
 
@@ -696,26 +752,18 @@ async function handleKapowwssPage(){
     return;
   }
 
-  // TRANG CHÍNH
   const stored = loadValidKey();
   const currentSession = LS.get('ff_session');
 
-  // Chỉ hiện key cũ nếu:
-  // 1. Key hợp lệ
-  // 2. Cùng device
-  // 3. Có session (key được tạo từ flow "Lấy Key")
-  // 4. Session của key trùng với session hiện tại (chưa bị reset)
   if(stored && stored.deviceID === getDeviceID() && stored.sessionID && stored.sessionID === currentSession){
     showKeyUI(stored.key, stored.exp);
     return;
   }
 
-  // Nếu key cũ không cùng session → đã bị reset → xóa và về UI mặc định
   if(stored && stored.sessionID !== currentSession){
     LS.del('ff_key');
   }
 
-  // Dọn dẹp token cũ nếu không có session (trạng thái lỗi)
   if(!currentSession){
     LS.del('ff_tok');
     LS.del('ff_tok_ts');
