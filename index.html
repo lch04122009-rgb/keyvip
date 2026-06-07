@@ -1,850 +1,181 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FREE FIRE · KEY SYSTEM</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#0a0a0f;--sur:#111118;--sur2:#16161f;
-  --bd:#1e1e2e;--bd2:#2a2a3e;
-  --or:#f97316;--or2:#ea580c;--re:#ef4444;
-  --go:#f59e0b;--gr:#22c55e;
-  --tx:#e2e8f0;--tx2:#94a3b8;--tx3:#475569;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-body{
-  font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);
-  min-height:100vh;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;padding:24px 16px;
-}
-body::before{
-  content:'';position:fixed;inset:0;pointer-events:none;
-  background:radial-gradient(ellipse 60% 35% at 50% 0%,rgba(249,115,22,.08) 0%,transparent 60%);
-}
-#pts{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
-.pt{position:absolute;border-radius:50%;opacity:0;animation:rise linear infinite}
-@keyframes rise{0%{transform:translateY(100vh);opacity:0}8%{opacity:.4}92%{opacity:.4}100%{transform:translateY(-40px);opacity:0}}
-.page{position:relative;z-index:1;width:100%;max-width:460px;display:flex;flex-direction:column;gap:20px}
-.header{text-align:center}
-.chip{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.25);
-  border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600;
-  letter-spacing:1.5px;color:var(--or);margin-bottom:14px;text-transform:uppercase;
-}
-.chip-dot{width:6px;height:6px;border-radius:50%;background:var(--or);animation:pdot 2s ease-in-out infinite}
-@keyframes pdot{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
-.title{font-size:30px;font-weight:700;line-height:1.2;color:var(--tx);letter-spacing:-.5px;margin-bottom:6px}
-.title span{color:var(--or)}
-.subtitle{font-size:12px;color:var(--tx3);letter-spacing:1px}
-.card{
-  background:var(--sur);border:1px solid var(--bd);border-radius:16px;padding:24px;
-  position:relative;overflow:hidden;
-}
-.card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--or),transparent);opacity:.4;
-}
-.status{
-  display:none;align-items:center;gap:10px;
-  border-radius:10px;padding:11px 14px;margin-bottom:16px;
-  font-size:13px;font-weight:500;
-}
-.status.show{display:flex}
-.status.loading{background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2);color:var(--or)}
-.status.success{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:var(--gr)}
-.status.error{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);color:var(--re)}
-.status.info{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);color:var(--go)}
-.status.warning{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);color:var(--go)}
-.spinner{width:14px;height:14px;flex-shrink:0;border:2px solid rgba(249,115,22,.2);border-top-color:var(--or);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.timer-bar{
-  display:none;align-items:center;justify-content:space-between;
-  background:var(--sur2);border:1px solid var(--bd2);
-  border-radius:10px;padding:12px 16px;margin-bottom:16px;
-}
-.timer-bar.show{display:flex}
-.timer-label{font-size:11px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase}
-.timer-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--go);letter-spacing:1px}
-.timer-val.expired{color:var(--re);animation:blink 1s step-end infinite}
-@keyframes blink{50%{opacity:.3}}
-.key-box{display:none;flex-direction:column;gap:8px;margin-bottom:16px}
-.key-box.show{display:flex}
-.key-label{font-size:11px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase}
-.key-inner{
-  display:flex;align-items:center;gap:10px;
-  background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.2);
-  border-radius:10px;padding:14px 16px;
-}
-.key-inner.used{
-  background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);
-}
-.key-text{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;color:var(--gr);letter-spacing:2px;flex:1;word-break:break-all}
-.key-text.used{color:var(--re);text-decoration:line-through;opacity:.6}
-.key-actions{display:flex;gap:8px;flex-wrap:wrap}
-.copy-btn,.use-btn{
-  background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);
-  border-radius:7px;padding:8px 14px;color:var(--gr);font-size:12px;font-weight:600;
-  cursor:pointer;transition:all .2s;white-space:nowrap;font-family:'Inter',sans-serif;
-}
-.copy-btn:hover,.use-btn:hover{background:rgba(34,197,94,.18)}
-.copy-btn.copied{background:rgba(34,197,94,.25)}
-.use-btn{
-  background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.25);color:var(--or);
-}
-.use-btn:hover{background:rgba(249,115,22,.18)}
-.use-btn.used{
-  background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--re);
-  cursor:not-allowed;
-}
-.info-box{
-  display:flex;align-items:flex-start;gap:12px;
-  background:var(--sur2);border:1px solid var(--bd2);
-  border-radius:10px;padding:14px;margin-bottom:16px;
-}
-.info-icon{font-size:20px;flex-shrink:0;margin-top:1px}
-.info-text{font-size:13.5px;line-height:1.65;color:var(--tx2)}
-.info-text strong{color:var(--tx)}
-.steps{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
-.step{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--sur2);border:1px solid var(--bd);border-radius:9px}
-.step-num{
-  width:24px;height:24px;border-radius:50%;flex-shrink:0;
-  background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.3);
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;color:var(--or);
-}
-.step-text{font-size:13px;color:var(--tx2);line-height:1.4}
-.step-text strong{color:var(--tx)}
-
-.link-box{
-  display:none;flex-direction:column;gap:10px;margin-bottom:16px;
-}
-.link-box.show{display:flex}
-.link-box-label{font-size:11px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase}
-.link-inner{
-  display:flex;align-items:center;gap:10px;
-  background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.25);
-  border-radius:10px;padding:14px 16px;
-}
-.link-text{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--or);flex:1;word-break:break-all}
-.link-open-btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  background:var(--or);border:none;border-radius:8px;padding:10px 16px;
-  color:#fff;font-size:13px;font-weight:700;cursor:pointer;
-  text-decoration:none;white-space:nowrap;
-  transition:all .2s;font-family:'Inter',sans-serif;
-  flex-shrink:0;
-}
-.link-open-btn:hover{background:var(--or2);transform:translateY(-1px)}
-.link-note{font-size:12px;color:var(--tx3);text-align:center;line-height:1.5}
-.link-note strong{color:var(--tx2)}
-
-.btn-main{
-  width:100%;padding:15px;
-  background:var(--or);border:none;border-radius:11px;
-  color:#fff;font-size:14px;font-weight:700;letter-spacing:.5px;
-  cursor:pointer;transition:all .2s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  font-family:'Inter',sans-serif;
-}
-.btn-main:hover:not(:disabled){background:var(--or2);transform:translateY(-1px)}
-.btn-main:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
-.btn-reset{
-  width:100%;padding:11px;background:transparent;border:1px solid var(--bd2);
-  border-radius:9px;color:var(--tx3);font-size:12px;font-weight:500;
-  cursor:pointer;transition:all .2s;margin-top:4px;
-  display:none;align-items:center;justify-content:center;gap:6px;
-  font-family:'Inter',sans-serif;
-}
-.btn-reset:hover{color:var(--tx2);border-color:var(--bd)}
-.divider{height:1px;background:var(--bd);margin:20px 0 16px}
-.badges{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.badge{
-  display:flex;align-items:center;gap:5px;
-  background:var(--sur2);border:1px solid var(--bd);
-  border-radius:20px;padding:4px 10px;font-size:11px;color:var(--tx3);letter-spacing:.5px;
-}
-.bdot{width:5px;height:5px;border-radius:50%;background:var(--tx3)}
-.bdot.g{background:var(--gr)}.bdot.o{background:var(--or)}.bdot.r{background:var(--re)}
-
-.kapowwss-page{display:none;text-align:center;padding:20px 0}
-.kapowwss-page.show{display:block}
-.kapowwss-icon{font-size:56px;margin-bottom:16px}
-.kapowwss-title{font-size:20px;font-weight:700;margin-bottom:8px}
-.kapowwss-sub{font-size:13px;color:var(--tx2);line-height:1.6}
-.kapowwss-sub strong{color:var(--tx)}
-.kapowwss-key-display{
-  margin:20px 0;padding:16px;
-  background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.25);
-  border-radius:10px;
-}
-.kapowwss-key-display .key-text{font-size:18px}
-.kapowwss-note{font-size:12px;color:var(--tx3);margin-top:16px;line-height:1.6}
-.kapowwss-note strong{color:var(--tx2)}
-.kapowwss-back-btn{
-  display:inline-flex;align-items:center;gap:6px;margin-top:14px;
-  background:var(--or);border:none;border-radius:8px;padding:11px 20px;
-  color:#fff;font-size:13px;font-weight:700;cursor:pointer;
-  text-decoration:none;transition:all .2s;font-family:'Inter',sans-serif;
-}
-.kapowwss-back-btn:hover{background:var(--or2)}
-
-.overlay{
-  display:none;position:fixed;inset:0;z-index:100;
-  background:rgba(10,10,15,.92);
-  flex-direction:column;align-items:center;justify-content:center;gap:16px;
-  backdrop-filter:blur(6px);
-}
-.overlay.show{display:flex}
-.ov-spin{width:44px;height:44px;border:3px solid rgba(249,115,22,.15);border-top-color:var(--or);border-radius:50%;animation:spin .8s linear infinite}
-.ov-title{font-size:15px;font-weight:600;color:var(--tx)}
-.ov-sub{font-size:12px;color:var(--tx3)}
-.footer{text-align:center;font-size:11px;color:var(--tx3);letter-spacing:.5px}
-@media(max-width:480px){.title{font-size:24px}.card{padding:18px}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FREE FIRE · KEY SYSTEM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Giữ nguyên CSS của bạn */
+        :root{--bg:#0a0a0f;--sur:#111118;--sur2:#16161f;--bd:#1e1e2e;--bd2:#2a2a3e;--or:#f97316;--or2:#ea580c;--re:#ef4444;--go:#f59e0b;--gr:#22c55e;--tx:#e2e8f0;--tx2:#94a3b8;--tx3:#475569;}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;}
+        /* ... giữ nguyên các style khác ... */
+    </style>
 </head>
 <body>
-<div id="pts"></div>
-
-<div class="overlay" id="overlay">
-  <div class="ov-spin"></div>
-  <div class="ov-title">Đang xác minh</div>
-  <div class="ov-sub">Vui lòng đợi trong giây lát...</div>
-</div>
-
-<div class="page">
-  <div class="header">
-    <div class="chip"><div class="chip-dot"></div>Free Fire · Key System</div>
-    <div class="title">Key Access <span>System</span></div>
-    <div class="subtitle">SECURE · ONE-TIME USE · FRESH KEY</div>
-  </div>
-
-  <div class="card">
-    <div class="status" id="status"></div>
-
-    <div id="mainPage">
-      <div class="timer-bar" id="timerBar">
-        <div class="timer-label">⏱ Hết hạn trong</div>
-        <div class="timer-val" id="timerVal">24:00:00</div>
-      </div>
-
-      <div class="key-box" id="keyBox">
-        <div class="key-label">🔑 Key hợp lệ · Single Use</div>
-        <div class="key-inner" id="keyInner">
-          <div class="key-text" id="keyText">—</div>
-          <div class="key-actions">
-            <button class="copy-btn" id="copyBtn" onclick="copyKey()">Copy</button>
-            <button class="use-btn" id="useBtn" onclick="useKey()">✓ Đã sử dụng</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="getPanel">
-        <div class="info-box">
-          <div class="info-icon">🎮</div>
-          <div class="info-text">
-            Nhận <strong>Key Free Fire</strong> miễn phí ngay bây giờ.<br>
-            <strong>⚠️ Mỗi key chỉ kích hoạt được 1 lần duy nhất.</strong><br>
-            Bạn có thể lấy key mới bất cứ lúc nào.
-          </div>
-        </div>
-
-        <div class="steps" id="stepsPanel">
-          <div class="step"><div class="step-num">1</div><div class="step-text">Nhấn nút → <strong>hệ thống tạo link xác minh</strong></div></div>
-          <div class="step"><div class="step-num">2</div><div class="step-text">Bấm vào link → hoàn thành quảng cáo Link4M</div></div>
-          <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Tự động quay lại</strong> và nhận key ngay ✅</div></div>
-        </div>
-
-        <button class="btn-main" id="btnGet" onclick="startFlow()">
-          ⚡ Lấy Key Free Fire Miễn Phí
-        </button>
-
-        <div class="link-box" id="linkBox">
-          <div class="link-box-label">🔗 Link xác minh của bạn</div>
-          <div class="link-inner">
-            <div class="link-text" id="linkText">—</div>
-            <a class="link-open-btn" id="linkOpenBtn" href="#" target="_blank" onclick="onOpenLink()">
-              Bấm vào đây →
-            </a>
-          </div>
-          <div class="link-note">
-            Bấm nút trên → xem quảng cáo ngắn → <strong>key tự hiện tại tab này</strong>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn-reset" id="btnReset" onclick="resetFlow()">
-        🔄 Lấy key mới
-      </button>
-
-      <div class="divider"></div>
-      <div class="badges">
-        <div class="badge"><div class="bdot g"></div>Anti-Bypass</div>
-        <div class="badge"><div class="bdot o"></div>Fresh Link</div>
-        <div class="badge"><div class="bdot r"></div>One-Time Use</div>
-        <div class="badge"><div class="bdot g"></div>24H Auto-Delete</div>
-      </div>
+    <div id="pts"></div>
+    <div class="overlay" id="overlay">
+        <div class="ov-spin"></div>
+        <div class="ov-title">Đang xác minh</div>
+        <div class="ov-sub">Vui lòng đợi trong giây lát...</div>
     </div>
 
-    <div class="kapowwss-page" id="kapowPage">
-      <div class="kapowwss-icon" id="kapowIcon">⏳</div>
-      <div class="kapowwss-title" id="kapowTitle">Đang xử lý...</div>
-      <div class="kapowwss-sub" id="kapowSub">Vui lòng đợi</div>
-      <div class="kapowwss-key-display" id="kapowKeyBox" style="display:none">
-        <div class="key-label" style="margin-bottom:8px">🔑 Key của bạn</div>
-        <div class="key-text" id="kapowKeyText">—</div>
-      </div>
-      <div class="kapowwss-note" id="kapowNote"></div>
+    <div class="page">
+        <div class="header">
+            <div class="chip"><div class="chip-dot"></div>Free Fire · Key System</div>
+            <div class="title">Key Access <span>System</span></div>
+            <div class="subtitle">SECURE · ONE-TIME USE · FRESH KEY</div>
+        </div>
+
+        <div class="card">
+            <div class="status" id="status"></div>
+            <div id="mainPage">
+                <div class="timer-bar" id="timerBar">
+                    <div class="timer-label">⏱ Hết hạn trong</div>
+                    <div class="timer-val" id="timerVal">24:00:00</div>
+                </div>
+
+                <div class="key-box" id="keyBox">
+                    <div class="key-label">🔑 Key hợp lệ · Single Use</div>
+                    <div class="key-inner" id="keyInner">
+                        <div class="key-text" id="keyText">—</div>
+                        <div class="key-actions">
+                            <button class="copy-btn" id="copyBtn" onclick="copyKey()">Copy</button>
+                            <button class="use-btn" id="useBtn" onclick="useKey()">✓ Đã sử dụng</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="getPanel">
+                    <div class="info-box">
+                        <div class="info-icon">🎮</div>
+                        <div class="info-text">
+                            Nhận <strong>Key Free Fire</strong> miễn phí ngay bây giờ.<br>
+                            <strong>⚠️ Mỗi key chỉ kích hoạt được 1 lần duy nhất.</strong><br>
+                            Bạn có thể lấy key mới bất cứ lúc nào.
+                        </div>
+                    </div>
+
+                    <div class="steps" id="stepsPanel">
+                        <div class="step"><div class="step-num">1</div><div class="step-text">Nhấn nút → <strong>hệ thống tạo link xác minh</strong></div></div>
+                        <div class="step"><div class="step-num">2</div><div class="step-text">Bấm vào link → hoàn thành quảng cáo Link4M</div></div>
+                        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Tự động quay lại</strong> và nhận key ngay ✅</div></div>
+                    </div>
+
+                    <button class="btn-main" id="btnGet" onclick="startFlow()">⚡ Lấy Key Free Fire Miễn Phí</button>
+
+                    <div class="link-box" id="linkBox">
+                        <div class="link-box-label">🔗 Link xác minh của bạn</div>
+                        <div class="link-inner">
+                            <div class="link-text" id="linkText">—</div>
+                            <a class="link-open-btn" id="linkOpenBtn" href="#" target="_blank" onclick="onOpenLink()">Bấm vào đây →</a>
+                        </div>
+                        <div class="link-note">Bấm nút trên → xem quảng cáo ngắn → <strong>key tự hiện tại tab này</strong></div>
+                    </div>
+                </div>
+
+                <button class="btn-reset" id="btnReset" onclick="resetFlow()">🔄 Lấy key mới</button>
+
+                <div class="divider"></div>
+                <div class="badges">
+                    <div class="badge"><div class="bdot g"></div>Anti-Bypass</div>
+                    <div class="badge"><div class="bdot o"></div>Fresh Link</div>
+                    <div class="badge"><div class="bdot r"></div>One-Time Use</div>
+                    <div class="badge"><div class="bdot g"></div>24H Auto-Delete</div>
+                </div>
+            </div>
+
+            <div class="kapowwss-page" id="kapowPage">
+                <div class="kapowwss-icon" id="kapowIcon">⏳</div>
+                <div class="kapowwss-title" id="kapowTitle">Đang xử lý...</div>
+                <div class="kapowwss-sub" id="kapowSub">Vui lòng đợi</div>
+                <div class="kapowwss-key-display" id="kapowKeyBox" style="display:none">
+                    <div class="key-label" style="margin-bottom:8px">🔑 Key của bạn</div>
+                    <div class="key-text" id="kapowKeyText">—</div>
+                </div>
+                <div class="kapowwss-note" id="kapowNote"></div>
+            </div>
+        </div>
+
+        <div class="footer">Free Fire Key System v6.1 · One-Time Use · Powered by Link4M</div>
     </div>
-  </div>
 
-  <div class="footer">Free Fire Key System v6.1 · One-Time Use · Powered by Link4M</div>
-</div>
-
-<script>
-const CFG = {
-  API_TOKEN  : '687f718ea1faab07844af330',
-  BASE_URL   : 'https://hacc41200.github.io/keyvip/',
-  SECRET     : 'FF_KEY_2026_SECRET',
-  KEY_LEN    : 18,
-  KEY_CHARS  : 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
-  EXPIRE_MS  : 86_400_000,
-  MIN_ELAPSED: 8_000,
-};
-
-/* ═══ DEVICE ID ═══ */
-function getDeviceID(){
-  const raw=[navigator.userAgent,navigator.language,navigator.platform,
-    screen.width,screen.height,screen.colorDepth,
-    new Date().getTimezoneOffset(),
-    navigator.hardwareConcurrency||0,navigator.maxTouchPoints||0].join('§');
-  let h=0x811c9dc5;
-  for(let i=0;i<raw.length;i++){h^=raw.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}
-  return h.toString(16).toUpperCase().padStart(8,'0');
-}
-
-/* ═══ RANDOM HELPERS ═══ */
-function randHex(bytes){
-  return Array.from(crypto.getRandomValues(new Uint8Array(bytes)))
-    .map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-function randBase36(bytes){
-  return Array.from(crypto.getRandomValues(new Uint8Array(bytes)))
-    .map(b=>(b%36).toString(36)).join('');
-}
-
-/* ═══ KEY GEN - TẠO KEY NGẪU NHIÊN 18 KÝ TỰ ═══ */
-async function genKey(did, sessionID){
-  let counter = parseInt(LS.get('ff_gen_counter')||'0', 10) + 1;
-  LS.set('ff_gen_counter', String(counter));
-
-  const nonce = randHex(16);
-  const ts = Date.now();
-
-  const seed = [
-    CFG.SECRET,
-    did,
-    sessionID || 'no-session',
-    String(counter),
-    String(ts),
-    nonce
-  ].join('|');
-
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(seed));
-  const arr = Array.from(new Uint8Array(buf));
-
-  let result = '';
-  for(let i = 0; i < CFG.KEY_LEN; i++){
-    const val = (arr[i % arr.length] * 256 + arr[(i + 1) % arr.length]) % CFG.KEY_CHARS.length;
-    result += CFG.KEY_CHARS[val];
-  }
-  return result;
-}
-
-/* ═══ STORAGE ═══ */
-const LS={
-  get:k=>{try{return localStorage.getItem(k)}catch{return null}},
-  set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}},
-  del:k=>{try{localStorage.removeItem(k)}catch{}},
-  getJ:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},
-  setJ:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}},
-};
-
-/* ═══ KEY MANAGEMENT - LƯU VÀO FIREBASE ═══ */
-function saveKey(key, sessionID){
-  // 1. Lưu vào localStorage (giữ nguyên cho UI)
-  LS.setJ('ff_key',{
-    key,
-    deviceID: getDeviceID(),
-    sessionID: sessionID,
-    exp: Date.now() + CFG.EXPIRE_MS,
-    ts: Date.now(),
-    used: false 
-  });
-
-  // 2. ★★★ GHI VÀO FIREBASE ĐỂ APP KIỂM TRA ★★★
-  if(typeof fbDb !== 'undefined'){
-    fbDb.ref('keys/' + key).set({
-      used: false,
-      createdAt: Date.now(),
-      expiresAt: Date.now() + CFG.EXPIRE_MS,
-      sessionID: sessionID
-    }).then(() => {
-      console.log('✅ Key đã lưu vào Firebase:', key);
-    }).catch(err => {
-      console.error('❌ Firebase save error:', err);
-    });
-  } else {
-    console.warn('⚠️ Firebase chưa được khởi tạo!');
-  }
-}
-
-function markKeyAsUsed(){
-  const d = LS.getJ('ff_key');
-  if(d){
-    d.used = true;
-    d.usedAt = Date.now();
-    LS.setJ('ff_key', d);
+    <!-- FIREBASE SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
-    // ★★★ CẬP NHẬT FIREBASE ★★★
-    if(typeof fbDb !== 'undefined'){
-      fbDb.ref('keys/' + d.key).update({
-        used: true,
-        usedAt: Date.now()
-      }).then(() => {
-        console.log('✅ Key đã đánh dấu used:', d.key);
-      }).catch(err => {
-        console.error('❌ Firebase update error:', err);
-      });
-    }
-  }
-}
+    <script>
+        // Cấu hình Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3Bm-SlcNEmUC2VdKCiNenf7vKhVhQx3A",
+            authDomain: "ff-key-system.firebaseapp.com",
+            databaseURL: "https://ff-key-system-default-rtdb.firebaseio.com",
+            projectId: "ff-key-system",
+            storageBucket: "ff-key-system.firebasestorage.app",
+            messagingSenderId: "784183180257",
+            appId: "1:784183180257:web:d5dd944f210a129779f0a0"
+        };
 
-function loadValidKey(){
-  const d = LS.getJ('ff_key');
-  if(!d) return null;
-  if(Date.now() >= d.exp){ LS.del('ff_key'); return null; }
-  return d;
-}
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-/* ═══ STATUS ═══ */
-function setStatus(type,msg){
-  const el=document.getElementById('status');
-  const icon={loading:'',success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'}[type]||'';
-  el.className='status show '+type;
-  el.innerHTML=type==='loading'
-    ?`<div class="spinner"></div><span>${msg}</span>`
-    :`<span>${icon} ${msg}</span>`;
-}
-function clearStatus(){document.getElementById('status').className='status';}
+        // ... Giữ nguyên code JavaScript của bạn ...
+        // CHỈ CẦN THÊM HÀM saveKeyToFirebase() VÀ GỌI NÓ SAU KHI TẠO KEY
 
-/* ═══ LINK4M API ═══ */
-async function createShortLink(){
-  const nonce = randBase36(6);
-  const ts = Date.now();
-  const destUrl = `${CFG.BASE_URL}?_t=${ts}&_r=${nonce}#kapowwss`;
-  const apiUrl = `https://link4m.co/api-shorten/v2?api=${CFG.API_TOKEN}&url=${encodeURIComponent(destUrl)}`;
+        // Hàm tạo key
+        function generateKey() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let key = '';
+            for (let i = 0; i < 18; i++) {
+                key += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return key;
+        }
 
-  try{
-    const r = await fetch(apiUrl, {method:'GET', cache:'no-store'});
-    if(r.ok){
-      const d = await r.json();
-      const link = d.shortenedUrl||d.short_link||d.url||(d.status==='success'&&d.data?.url)||null;
-      if(link) return link;
-      throw new Error(d.message||d.error||'API không trả link');
-    }
-    throw new Error('API trả về lỗi HTTP '+r.status);
-  }catch(e){
-    const proxies=[
-      `https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`,
-      `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`,
-    ];
-    for(const proxy of proxies){
-      try{
-        const r = await fetch(proxy, {method:'GET', cache:'no-store'});
-        if(!r.ok) continue;
-        const raw = await r.json();
-        const text = raw.contents||raw;
-        const d = typeof text==='string'?JSON.parse(text):text;
-        const link = d.shortenedUrl||d.short_link||d.url||(d.status==='success'&&d.data?.url)||null;
-        if(link) return link;
-      }catch{}
-    }
-    throw new Error('Không thể tạo link. Kiểm tra kết nối mạng.');
-  }
-}
+        // ★★★ HÀM MỚI: LƯU KEY VÀO FIREBASE ★★★
+        async function saveKeyToFirebase(key) {
+            try {
+                const now = Date.now();
+                const expiresAt = now + (24 * 60 * 60 * 1000); // 24 giờ
 
-/* ═══ MAIN PAGE LOGIC ═══ */
-async function startFlow(){
-  const btn = document.getElementById('btnGet');
-  btn.disabled = true;
-  btn.innerHTML = '⏳ Đang gọi API tạo link mới...';
-  setStatus('loading','Đang tạo phiên lấy key MỚI...');
+                await db.ref('keys/' + key).set({
+                    used: false,
+                    createdAt: now,
+                    expiresAt: expiresAt,
+                    deviceId: null,
+                    usedAt: null,
+                    status: 'active'
+                });
 
-  try{
-    LS.del('ff_key');
-    LS.del('ff_tok');
-    LS.del('ff_tok_ts');
-    LS.del('ff_short');
-    LS.del('ff_session');
+                console.log('✅ Key đã lưu vào Firebase:', key);
+                return true;
+            } catch (error) {
+                console.error('❌ Lỗi lưu key:', error);
+                return false;
+            }
+        }
 
-    const sessionID = randHex(16);
-    LS.set('ff_session', sessionID);
+        // Hàm xử lý khi lấy key thành công (sau khi hoàn thành Link4M)
+        async function handleKapowwssPage() {
+            // ... code hiện tại của bạn ...
+            
+            // Sau khi tạo key, LƯU VÀO FIREBASE
+            const key = generateKey();
+            const saved = await saveKeyToFirebase(key);
+            
+            if (saved) {
+                // Hiển thị key cho user
+                document.getElementById('kapowKeyText').textContent = key;
+                document.getElementById('kapowKeyBox').style.display = 'block';
+                document.getElementById('kapowIcon').textContent = '✅';
+                document.getElementById('kapowTitle').textContent = 'Key đã được tạo!';
+                document.getElementById('kapowSub').innerHTML = 'Key đã được lưu vào hệ thống.<br>Copy key và nhập vào app để kích hoạt.';
+            }
+        }
 
-    const tok = randHex(20);
-    LS.set('ff_tok', tok);
-    LS.set('ff_tok_ts', String(Date.now()));
-
-    const shortLink = await createShortLink();
-    LS.set('ff_short', shortLink);
-
-    showLinkBox(shortLink);
-    clearStatus();
-    btn.innerHTML = '⚡ Lấy Key Free Fire Miễn Phí';
-
-  }catch(e){
-    setStatus('error','Lỗi: '+e.message);
-    btn.disabled = false;
-    btn.innerHTML = '⚡ Lấy Key Free Fire Miễn Phí';
-    LS.del('ff_tok');LS.del('ff_tok_ts');
-  }
-}
-
-function showLinkBox(link){
-  document.getElementById('btnGet').style.display='none';
-  document.getElementById('stepsPanel').style.display='none';
-
-  const lb = document.getElementById('linkBox');
-  document.getElementById('linkText').textContent = link;
-  document.getElementById('linkOpenBtn').href = link;
-  lb.classList.add('show');
-
-  setStatus('info','Link MỚI đã được tạo. Bấm nút để mở xác minh ↓');
-}
-
-function onOpenLink(){
-  setStatus('loading','Đang chờ bạn hoàn thành xác minh... Key MỚI sẽ tự hiện tại tab này.');
-  startKeyPolling();
-}
-
-let pollInt = null;
-let pollTimeout = null;
-function startKeyPolling(){
-  clearInterval(pollInt);
-  clearTimeout(pollTimeout);
-
-  const currentSession = LS.get('ff_session');
-
-  pollInt = setInterval(()=>{
-    const stored = loadValidKey();
-    if(stored && stored.deviceID === getDeviceID() && stored.sessionID === currentSession && !stored.used){
-      clearInterval(pollInt);
-      clearTimeout(pollTimeout);
-      showKeyUI(stored.key, stored.exp);
-    }
-  }, 1000);
-
-  pollTimeout = setTimeout(()=>{
-    clearInterval(pollInt);
-    const stored = loadValidKey();
-    if(!stored || stored.sessionID !== LS.get('ff_session') || stored.used){
-      setStatus('error','Hết thời gian chờ. Vui lòng thử lại.');
-      resetFlow();
-    }
-  }, 300_000);
-}
-
-function showKeyUI(key, exp){
-  const stored = loadValidKey();
-  const isUsed = stored && stored.used;
-
-  document.getElementById('keyText').textContent = key;
-  document.getElementById('keyBox').classList.add('show');
-  document.getElementById('timerBar').classList.add('show');
-  document.getElementById('btnReset').style.display = 'flex';
-  document.getElementById('getPanel').style.display = 'none';
-
-  const keyInner = document.getElementById('keyInner');
-  const keyText = document.getElementById('keyText');
-  const useBtn = document.getElementById('useBtn');
-
-  if(isUsed){
-    keyInner.classList.add('used');
-    keyText.classList.add('used');
-    useBtn.classList.add('used');
-    useBtn.textContent = '✗ Đã sử dụng';
-    useBtn.disabled = true;
-    setStatus('warning','⚠️ Key này đã được đánh dấu là đã sử dụng. Bạn có thể bấm "Lấy key mới" bên dưới.');
-  }else{
-    keyInner.classList.remove('used');
-    keyText.classList.remove('used');
-    useBtn.classList.remove('used');
-    useBtn.textContent = '✓ Đã sử dụng';
-    useBtn.disabled = false;
-    clearStatus();
-    setStatus('success','Xác minh thành công! Key MỚI đã được cấp.');
-  }
-
-  startTimer(exp);
-}
-
-/* ═══ SỬ DỤNG KEY ═══ */
-function useKey(){
-  const stored = loadValidKey();
-  if(!stored){
-    setStatus('error','Không tìm thấy key.');
-    return;
-  }
-
-  if(stored.used){
-    setStatus('warning','Key này đã được đánh dấu là đã sử dụng rồi.');
-    return;
-  }
-
-  markKeyAsUsed();
-
-  const keyInner = document.getElementById('keyInner');
-  const keyText = document.getElementById('keyText');
-  const useBtn = document.getElementById('useBtn');
-
-  keyInner.classList.add('used');
-  keyText.classList.add('used');
-  useBtn.classList.add('used');
-  useBtn.textContent = '✗ Đã sử dụng';
-  useBtn.disabled = true;
-
-  setStatus('success','✅ Key đã được đánh dấu là đã sử dụng. Bạn có thể bấm "🔄 Lấy key mới" nếu cần thêm.');
-}
-
-let timerInt = null;
-function startTimer(exp){
-  clearInterval(timerInt);
-  const el = document.getElementById('timerVal');
-  function tick(){
-    const d = Math.max(0, exp - Date.now());
-    if(d === 0){
-      LS.del('ff_key');
-      el.className = 'timer-val expired';
-      el.textContent = 'Hết hạn';
-      clearInterval(timerInt);
-      setTimeout(resetFlow, 2000);
-      return;
-    }
-    const h = Math.floor(d/3600000), m = Math.floor((d%3600000)/60000), s = Math.floor((d%60000)/1000);
-    el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
-  }
-  tick();
-  timerInt = setInterval(tick, 1000);
-}
-const pad = n => String(n).padStart(2,'0');
-
-function copyKey(){
-  const key = document.getElementById('keyText').textContent;
-  if(!key || key === '—') return;
-  navigator.clipboard.writeText(key).then(()=>{
-    const b = document.getElementById('copyBtn');
-    b.textContent = '✓ Copied';
-    b.classList.add('copied');
-    setTimeout(()=>{b.textContent='Copy';b.classList.remove('copied');}, 2000);
-  });
-}
-
-function resetFlow(){
-  clearInterval(timerInt);
-  clearInterval(pollInt);
-  clearTimeout(pollTimeout);
-
-  LS.del('ff_key');
-  LS.del('ff_tok');
-  LS.del('ff_tok_ts');
-  LS.del('ff_short');
-  LS.del('ff_session');
-
-  document.getElementById('keyBox').classList.remove('show');
-  document.getElementById('timerBar').classList.remove('show');
-  document.getElementById('timerVal').className = 'timer-val';
-  document.getElementById('btnReset').style.display = 'none';
-  document.getElementById('getPanel').style.display = 'block';
-  document.getElementById('stepsPanel').style.display = 'flex';
-  document.getElementById('btnGet').style.display = 'flex';
-  document.getElementById('btnGet').disabled = false;
-  document.getElementById('btnGet').innerHTML = '⚡ Lấy Key Free Fire Miễn Phí';
-  document.getElementById('linkBox').classList.remove('show');
-  clearStatus();
-}
-
-/* ═══ KAPOWWSS PAGE LOGIC ═══ */
-async function handleKapowwssPage(){
-  document.getElementById('mainPage').style.display = 'none';
-  document.getElementById('kapowPage').classList.add('show');
-
-  const icon = document.getElementById('kapowIcon');
-  const title = document.getElementById('kapowTitle');
-  const sub = document.getElementById('kapowSub');
-  const keyBox = document.getElementById('kapowKeyBox');
-  const keyText = document.getElementById('kapowKeyText');
-  const note = document.getElementById('kapowNote');
-
-  const tok = LS.get('ff_tok');
-  const tokTs = parseInt(LS.get('ff_tok_ts')||'0', 10);
-  const elapsed = Date.now() - tokTs;
-  const sessionID = LS.get('ff_session');
-
-  if(!tok){
-    const stored = loadValidKey();
-    if(stored){
-      icon.textContent = '✅';
-      title.textContent = 'Key đã được cấp!';
-      title.style.color = 'var(--gr)';
-      sub.innerHTML = 'Key đã được gửi đến tab chính. Vui lòng quay lại tab đó để xem.';
-      keyBox.style.display = 'block';
-      keyText.textContent = stored.key;
-      note.innerHTML = '<strong>Tab này có thể đóng thủ công.</strong><br><br><a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
-      return;
-    }
-    icon.textContent = '⚠️';
-    title.textContent = 'Không có yêu cầu nào';
-    title.style.color = 'var(--go)';
-    sub.innerHTML = 'Vui lòng quay lại trang chính và nhấn <strong>"Lấy Key"</strong> trước.';
-    note.innerHTML = '<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
-    return;
-  }
-
-  if(elapsed < CFG.MIN_ELAPSED){
-    icon.textContent = '❌';
-    title.textContent = 'Xác minh không hợp lệ';
-    title.style.color = 'var(--re)';
-    sub.innerHTML = 'Vui lòng hoàn thành <strong>toàn bộ quảng cáo</strong> trên Link4M.<br>Không được bỏ qua hoặc tải lại trang.';
-    LS.del('ff_tok');LS.del('ff_tok_ts');
-    note.innerHTML = '<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Thử lại từ đầu</a>';
-    return;
-  }
-
-  const ref = document.referrer || '';
-  const isFromLink4m = ref.includes('link4m');
-
-  if(!isFromLink4m && elapsed < 30_000){
-    icon.textContent = '❌';
-    title.textContent = 'Truy cập không hợp lệ';
-    title.style.color = 'var(--re)';
-    sub.innerHTML = 'Trang này chỉ dành cho redirect từ Link4M.<br>Vui lòng bấm link xác minh từ trang chính.';
-    LS.del('ff_tok');LS.del('ff_tok_ts');
-    note.innerHTML = '<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
-    return;
-  }
-
-  icon.textContent = '⏳';
-  title.textContent = 'Đang tạo key MỚI...';
-  sub.textContent = 'Vui lòng đợi vài giây';
-
-  try{
-    const did = getDeviceID();
-    const key = await genKey(did, sessionID);
-    saveKey(key, sessionID);
-
-    LS.del('ff_tok');
-    LS.del('ff_tok_ts');
-    LS.del('ff_short');
-
-    icon.textContent = '✅';
-    title.textContent = 'Xác minh thành công!';
-    title.style.color = 'var(--gr)';
-    sub.innerHTML = 'Key MỚI đã được gửi đến tab chính.';
-    keyBox.style.display = 'block';
-    keyText.textContent = key;
-
-    note.innerHTML = '<strong>Quay lại tab chính</strong> để xem và copy key.<br><br><a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
-
-  }catch(e){
-    icon.textContent = '❌';
-    title.textContent = 'Lỗi tạo key';
-    title.style.color = 'var(--re)';
-    sub.textContent = 'Đã xảy ra lỗi. Vui lòng thử lại.';
-    LS.del('ff_tok');LS.del('ff_tok_ts');
-    note.innerHTML = '<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
-  }
-}
-
-/* ═══ INIT — ROUTER ═══ */
-(function init(){
-  const hash = window.location.hash;
-  const isKapowwss = hash === '#kapowwss' || hash.includes('kapowwss');
-
-  if(isKapowwss){
-    handleKapowwssPage();
-    return;
-  }
-
-  const stored = loadValidKey();
-  const currentSession = LS.get('ff_session');
-
-  if(stored && stored.deviceID === getDeviceID() && stored.sessionID && stored.sessionID === currentSession){
-    showKeyUI(stored.key, stored.exp);
-    return;
-  }
-
-  if(stored && stored.sessionID !== currentSession){
-    LS.del('ff_key');
-  }
-
-  if(!currentSession){
-    LS.del('ff_tok');
-    LS.del('ff_tok_ts');
-    LS.del('ff_short');
-  }
-
-  document.getElementById('mainPage').style.display = 'block';
-  document.getElementById('kapowPage').classList.remove('show');
-})();
-
-/* ═══ PARTICLES ═══ */
-(function(){
-  const c = document.getElementById('pts');
-  for(let i = 0; i < 25; i++){
-    const p = document.createElement('div');
-    p.className = 'pt';
-    p.style.cssText = [`left:${Math.random()*100}%`,`width:${Math.random()>.7?3:2}px`,
-      `height:${Math.random()>.7?3:2}px`,`animation-duration:${8+Math.random()*14}s`,
-      `animation-delay:${Math.random()*12}s`,
-      `background:${Math.random()>.5?'#f97316':'#f59e0b'}`].join(';');
-    c.appendChild(p);
-  }
-})();
-
-document.addEventListener('keydown', e => {
-  if(e.key === 'F12' || (e.ctrlKey && e.shiftKey && 'IJC'.includes(e.key)) || (e.ctrlKey && e.key === 'U'))
-    e.preventDefault();
-});
-document.addEventListener('contextmenu', e => e.preventDefault());
-</script>
-
-<!-- ═══ FIREBASE SDK ═══ -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-<script>
-// ★★★ FIREBASE CONFIG - ĐÃ SỬA ĐỂ KHỚP VỚI APP ANDROID ★★★
-const firebaseConfig = {
-  apiKey: "AIzaSyCP85bJIPE6MVyTuODJrQGKvV5HARtV4iY",
-  authDomain: "ff-key-system.firebaseapp.com",
-  databaseURL: "https://ff-key-system-default-rtdb.firebaseio.com",
-  projectId: "ff-key-system",
-  storageBucket: "ff-key-system.firebasestorage.app",
-  messagingSenderId: "784183180257",
-  appId: "1:784183180257:web:84c56885534fe42c79f0a0"
-};
-
-// Initialize Firebase
-try {
-  firebase.initializeApp(firebaseConfig);
-  const fbDb = firebase.database();
-  console.log('✅ Firebase initialized successfully');
-  console.log('📊 Database URL:', firebaseConfig.databaseURL);
-} catch (error) {
-  console.error('❌ Firebase initialization error:', error);
-}
-</script>
-
+        // ... Các hàm khác giữ nguyên ...
+    </script>
 </body>
 </html>
