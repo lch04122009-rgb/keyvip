@@ -141,6 +141,19 @@ body::before{
 .link-note{font-size:12px;color:var(--tx3);text-align:center;line-height:1.5}
 .link-note strong{color:var(--tx2)}
 
+/* ★ PROGRESS BAR CHO BƯỚC TẠO LINK ★ */
+.link-progress{
+  display:none;flex-direction:column;gap:8px;margin-bottom:16px;
+  background:var(--sur2);border:1px solid var(--bd2);border-radius:10px;padding:14px;
+}
+.link-progress.show{display:flex}
+.lp-row{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--tx3)}
+.lp-row.done{color:var(--gr)}
+.lp-row.active{color:var(--or)}
+.lp-row.fail{color:var(--re)}
+.lp-icon{width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
+.lp-spin{width:13px;height:13px;border:2px solid rgba(249,115,22,.2);border-top-color:var(--or);border-radius:50%;animation:spin .7s linear infinite}
+
 .btn-main{
   width:100%;padding:15px;
   background:var(--or);border:none;border-radius:11px;
@@ -191,7 +204,6 @@ body::before{
 }
 .kapowwss-back-btn:hover{background:var(--or2)}
 
-/* ★★★ NÚT COPY CHO KAPOWWSS KEY ★★★ */
 .kapowwss-copy-btn{
   display:inline-flex;align-items:center;gap:6px;
   margin-top:12px;
@@ -276,9 +288,21 @@ body::before{
         </div>
 
         <div class="steps" id="stepsPanel">
-          <div class="step"><div class="step-num">1</div><div class="step-text">Nhấn nút → <strong>hệ thống tạo link xác minh</strong></div></div>
-          <div class="step"><div class="step-num">2</div><div class="step-text">Bấm vào link → hoàn thành quảng cáo Link4M</div></div>
+          <div class="step"><div class="step-num">1</div><div class="step-text">Nhấn nút → <strong>hệ thống tạo link xác minh 2 lớp</strong></div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-text">Bấm vào link → hoàn thành quảng cáo <strong>Link4M</strong> → chuyển qua <strong>Layma</strong></div></div>
           <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Tự động quay lại</strong> và nhận key ngay ✅</div></div>
+        </div>
+
+        <!-- Progress bar hiện khi đang tạo link -->
+        <div class="link-progress" id="linkProgress">
+          <div class="lp-row" id="lp1">
+            <div class="lp-icon" id="lp1i"><div class="lp-spin"></div></div>
+            <span>Đang tạo link Layma...</span>
+          </div>
+          <div class="lp-row" id="lp2">
+            <div class="lp-icon" id="lp2i">⏳</div>
+            <span>Đang bọc qua Link4M...</span>
+          </div>
         </div>
 
         <button class="btn-main" id="btnGet" onclick="startFlow()">
@@ -286,7 +310,7 @@ body::before{
         </button>
 
         <div class="link-box" id="linkBox">
-          <div class="link-box-label">🔗 Link xác minh của bạn</div>
+          <div class="link-box-label">🔗 Link xác minh 2 lớp của bạn</div>
           <div class="link-inner">
             <div class="link-text" id="linkText">—</div>
             <a class="link-open-btn" id="linkOpenBtn" href="#" target="_blank" onclick="onOpenLink()">
@@ -294,7 +318,7 @@ body::before{
             </a>
           </div>
           <div class="link-note">
-            Bấm nút trên → xem quảng cáo ngắn → <strong>key tự hiện tại tab này</strong>
+            Link4M → Layma → xem quảng cáo → <strong>key tự hiện tại tab này</strong>
           </div>
         </div>
       </div>
@@ -306,7 +330,7 @@ body::before{
       <div class="divider"></div>
       <div class="badges">
         <div class="badge"><div class="bdot g"></div>Anti-Bypass</div>
-        <div class="badge"><div class="bdot o"></div>Fresh Link</div>
+        <div class="badge"><div class="bdot o"></div>Double-Layer</div>
         <div class="badge"><div class="bdot r"></div>One-Time Use</div>
         <div class="badge"><div class="bdot g"></div>24H Auto-Delete</div>
       </div>
@@ -325,17 +349,15 @@ body::before{
     </div>
   </div>
 
-  <div class="footer">Free Fire Key System v6.2 · One-Time Use · Powered by Link4M & Firebase</div>
+  <div class="footer">Free Fire Key System v6.3 · Double-Layer · Link4M + Layma + Firebase</div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- ★★★ BƯỚC 1: LOAD FIREBASE SDK TRƯỚC (QUAN TRỌNG NHẤT) ★★★ -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ═══ FIREBASE SDK ═══ -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <script>
-// ★★★ KHỞI TẠO FIREBASE NGAY LẬP TỨC ★★★
+// ★ KHỞI TẠO FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyB3Bm-SlcNEmUC2VdKCiNenf7vKhVhQx3A",
   authDomain: "ff-key-system.firebaseapp.com",
@@ -346,26 +368,24 @@ const firebaseConfig = {
   appId: "1:784183180257:web:d5dd944f210a129779f0a0",
   measurementId: "G-XT6Q4L909H"
 };
-
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const fbDb = firebase.database();
-console.log('✅ Firebase initialized successfully');
-console.log('📊 Database URL:', firebaseConfig.databaseURL);
+console.log('✅ Firebase initialized');
 </script>
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- ★★★ BƯỚC 2: CODE CHÍNH (SAU KHI FIREBASE ĐÃ SẴN SÀNG) ★★★ -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
 <script>
 const CFG = {
-  API_TOKEN  : '687f718ea1faab07844af330',
-  BASE_URL   : 'https://hacc41200.github.io/keyvip/',
-  SECRET     : 'FF_KEY_2026_SECRET',
-  KEY_LEN    : 18,
-  KEY_CHARS  : 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
-  EXPIRE_MS  : 86_400_000,
-  MIN_ELAPSED: 8_000,
+  // Link4M
+  LINK4M_TOKEN : '687f718ea1faab07844af330',
+  // Layma.net
+  LAYMA_TOKEN  : '8fed52be94e253f60a5d6777cf8eedd0',
+  // URL đích cuối cùng (trang kapowwss)
+  BASE_URL     : 'https://hacc41200.github.io/keyvip/',
+  SECRET       : 'FF_KEY_2026_SECRET',
+  KEY_LEN      : 18,
+  KEY_CHARS    : 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
+  EXPIRE_MS    : 86_400_000,
+  MIN_ELAPSED  : 8_000,
 };
 
 /* ═══ DEVICE ID ═══ */
@@ -393,26 +413,15 @@ function randBase36(bytes){
 async function genKey(did, sessionID){
   let counter = parseInt(LS.get('ff_gen_counter')||'0', 10) + 1;
   LS.set('ff_gen_counter', String(counter));
-
   const nonce = randHex(16);
   const ts = Date.now();
-
-  const seed = [
-    CFG.SECRET,
-    did,
-    sessionID || 'no-session',
-    String(counter),
-    String(ts),
-    nonce
-  ].join('|');
-
+  const seed = [CFG.SECRET,did,sessionID||'no-session',String(counter),String(ts),nonce].join('|');
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(seed));
   const arr = Array.from(new Uint8Array(buf));
-
   let result = '';
-  for(let i = 0; i < CFG.KEY_LEN; i++){
-    const val = (arr[i % arr.length] * 256 + arr[(i + 1) % arr.length]) % CFG.KEY_CHARS.length;
-    result += CFG.KEY_CHARS[val];
+  for(let i=0;i<CFG.KEY_LEN;i++){
+    const val=(arr[i%arr.length]*256+arr[(i+1)%arr.length])%CFG.KEY_CHARS.length;
+    result+=CFG.KEY_CHARS[val];
   }
   return result;
 }
@@ -426,58 +435,37 @@ const LS={
   setJ:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}},
 };
 
-/* ═══ KEY MANAGEMENT - LƯU VÀO FIREBASE ★★★ ═══ */
+/* ═══ KEY MANAGEMENT ═══ */
 function saveKey(key, sessionID){
-  // 1. Lưu vào localStorage (cho UI)
   LS.setJ('ff_key',{
-    key,
-    deviceID: getDeviceID(),
-    sessionID: sessionID,
-    exp: Date.now() + CFG.EXPIRE_MS,
-    ts: Date.now(),
-    used: false 
+    key, deviceID:getDeviceID(), sessionID,
+    exp:Date.now()+CFG.EXPIRE_MS, ts:Date.now(), used:false
   });
-
-  // 2. ★★★ LƯU VÀO FIREBASE - ĐÂY LÀ PHẦN QUAN TRỌNG NHẤT ★★★
-  const expiresAt = Date.now() + CFG.EXPIRE_MS;
-  
-  fbDb.ref('keys/' + key).set({
-    used: false,
-    createdAt: Date.now(),
-    expiresAt: expiresAt,
-    sessionID: sessionID,
-    deviceId: getDeviceID()
-  }).then(() => {
-    console.log('✅ Key đã lưu vào Firebase:', key);
-    console.log('📊 expiresAt:', expiresAt, '=', new Date(expiresAt).toLocaleString());
-  }).catch(err => {
-    console.error('❌ Lỗi lưu Firebase:', err);
-    setStatus('error', 'Lỗi lưu key: ' + err.message);
+  const expiresAt = Date.now()+CFG.EXPIRE_MS;
+  fbDb.ref('keys/'+key).set({
+    used:false, createdAt:Date.now(), expiresAt, sessionID, deviceId:getDeviceID()
+  }).then(()=>{
+    console.log('✅ Key saved to Firebase:', key);
+  }).catch(err=>{
+    console.error('❌ Firebase save error:', err);
   });
 }
 
 function markKeyAsUsed(){
-  const d = LS.getJ('ff_key');
+  const d=LS.getJ('ff_key');
   if(d){
-    d.used = true;
-    d.usedAt = Date.now();
-    LS.setJ('ff_key', d);
-    
-    fbDb.ref('keys/' + d.key).update({
-      used: true,
-      usedAt: Date.now()
-    }).then(() => {
-      console.log('✅ Key đã đánh dấu used:', d.key);
-    }).catch(err => {
-      console.error('❌ Lỗi update Firebase:', err);
-    });
+    d.used=true; d.usedAt=Date.now();
+    LS.setJ('ff_key',d);
+    fbDb.ref('keys/'+d.key).update({used:true,usedAt:Date.now()})
+      .then(()=>console.log('✅ Key marked used:',d.key))
+      .catch(err=>console.error('❌ Firebase update error:',err));
   }
 }
 
 function loadValidKey(){
-  const d = LS.getJ('ff_key');
+  const d=LS.getJ('ff_key');
   if(!d) return null;
-  if(Date.now() >= d.exp){ LS.del('ff_key'); return null; }
+  if(Date.now()>=d.exp){LS.del('ff_key');return null;}
   return d;
 }
 
@@ -492,39 +480,139 @@ function setStatus(type,msg){
 }
 function clearStatus(){document.getElementById('status').className='status';}
 
-/* ═══ LINK4M API ═══ */
-async function createShortLink(){
+/* ═══════════════════════════════════════════════════════════
+   ★★★ LAYMA API - RÚT GỌN LINK QUA LAYMA.NET ★★★
+   Endpoint: GET https://api.layma.net/api/admin/shortlink/quicklink
+   Params: tokenUser, format=json, url, link_du_phong (tuỳ chọn)
+   Response: {"success":true,"html":"https://layma.net/xxxxx"}
+═══════════════════════════════════════════════════════════ */
+async function createLaymaLink(destUrl) {
+  const apiUrl = `https://api.layma.net/api/admin/shortlink/quicklink?tokenUser=${CFG.LAYMA_TOKEN}&format=json&url=${encodeURIComponent(destUrl)}`;
+  
+  console.log('🔗 Layma API call:', apiUrl);
+
+  // Thử trực tiếp trước
+  try {
+    const r = await fetch(apiUrl, { method: 'GET', cache: 'no-store' });
+    if (r.ok) {
+      const d = await r.json();
+      console.log('📊 Layma response:', d);
+      if (d.success && d.html) return d.html;
+      if (d.success && d.url) return d.url;
+      throw new Error(d.message || d.error || 'Layma API không trả link');
+    }
+    throw new Error('Layma HTTP ' + r.status);
+  } catch(e) {
+    console.warn('⚠️ Layma direct failed:', e.message, '— trying proxies...');
+  }
+
+  // Fallback qua CORS proxy
+  const proxies = [
+    `https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`,
+    `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`,
+  ];
+  for (const proxy of proxies) {
+    try {
+      const r = await fetch(proxy, { method: 'GET', cache: 'no-store' });
+      if (!r.ok) continue;
+      const raw = await r.json();
+      const text = raw.contents || raw;
+      const d = typeof text === 'string' ? JSON.parse(text) : text;
+      console.log('📊 Layma proxy response:', d);
+      if (d.success && d.html) return d.html;
+      if (d.success && d.url) return d.url;
+    } catch(e) {
+      console.warn('⚠️ Layma proxy failed:', e.message);
+    }
+  }
+
+  throw new Error('Không thể tạo link Layma. Kiểm tra API token hoặc kết nối mạng.');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ★★★ LINK4M API - RÚT GỌN LINK QUA LINK4M.CO ★★★
+   (Bọc link Layma vào Link4M để double-layer)
+═══════════════════════════════════════════════════════════ */
+async function createLink4mLink(destUrl) {
+  const apiUrl = `https://link4m.co/api-shorten/v2?api=${CFG.LINK4M_TOKEN}&url=${encodeURIComponent(destUrl)}`;
+
+  try {
+    const r = await fetch(apiUrl, { method: 'GET', cache: 'no-store' });
+    if (r.ok) {
+      const d = await r.json();
+      const link = d.shortenedUrl || d.short_link || d.url || (d.status === 'success' && d.data?.url) || null;
+      if (link) return link;
+      throw new Error(d.message || d.error || 'Link4M không trả link');
+    }
+    throw new Error('Link4M HTTP ' + r.status);
+  } catch(e) {
+    console.warn('⚠️ Link4M direct failed:', e.message, '— trying proxies...');
+  }
+
+  const proxies = [
+    `https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`,
+    `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`,
+  ];
+  for (const proxy of proxies) {
+    try {
+      const r = await fetch(proxy, { method: 'GET', cache: 'no-store' });
+      if (!r.ok) continue;
+      const raw = await r.json();
+      const text = raw.contents || raw;
+      const d = typeof text === 'string' ? JSON.parse(text) : text;
+      const link = d.shortenedUrl || d.short_link || d.url || (d.status === 'success' && d.data?.url) || null;
+      if (link) return link;
+    } catch(e) {
+      console.warn('⚠️ Link4M proxy failed:', e.message);
+    }
+  }
+
+  throw new Error('Không thể tạo link Link4M. Kiểm tra API token hoặc kết nối mạng.');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ★★★ TẠO SHORT LINK 2 LỚP: LAYMA → LINK4M ★★★
+   Flow: Link4M URL → (user mở) → Layma URL → #kapowwss
+═══════════════════════════════════════════════════════════ */
+async function createDoubleLayerLink() {
   const nonce = randBase36(6);
   const ts = Date.now();
+  // URL đích cuối cùng: trang kapowwss
   const destUrl = `${CFG.BASE_URL}?_t=${ts}&_r=${nonce}#kapowwss`;
-  const apiUrl = `https://link4m.co/api-shorten/v2?api=${CFG.API_TOKEN}&url=${encodeURIComponent(destUrl)}`;
+  
+  // --- BƯỚC 1: Rút gọn bằng Layma ---
+  updateLinkProgress(1, 'active');
+  console.log('📍 Step 1: Rút gọn qua Layma, dest =', destUrl);
+  const laymaLink = await createLaymaLink(destUrl);
+  console.log('✅ Layma link:', laymaLink);
+  updateLinkProgress(1, 'done');
 
-  try{
-    const r = await fetch(apiUrl, {method:'GET', cache:'no-store'});
-    if(r.ok){
-      const d = await r.json();
-      const link = d.shortenedUrl||d.short_link||d.url||(d.status==='success'&&d.data?.url)||null;
-      if(link) return link;
-      throw new Error(d.message||d.error||'API không trả link');
-    }
-    throw new Error('API trả về lỗi HTTP '+r.status);
-  }catch(e){
-    const proxies=[
-      `https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`,
-      `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`,
-    ];
-    for(const proxy of proxies){
-      try{
-        const r = await fetch(proxy, {method:'GET', cache:'no-store'});
-        if(!r.ok) continue;
-        const raw = await r.json();
-        const text = raw.contents||raw;
-        const d = typeof text==='string'?JSON.parse(text):text;
-        const link = d.shortenedUrl||d.short_link||d.url||(d.status==='success'&&d.data?.url)||null;
-        if(link) return link;
-      }catch{}
-    }
-    throw new Error('Không thể tạo link. Kiểm tra kết nối mạng.');
+  // --- BƯỚC 2: Bọc link Layma vào Link4M ---
+  updateLinkProgress(2, 'active');
+  console.log('📍 Step 2: Bọc qua Link4M, layma =', laymaLink);
+  const link4mLink = await createLink4mLink(laymaLink);
+  console.log('✅ Link4M link:', link4mLink);
+  updateLinkProgress(2, 'done');
+
+  // Kết quả cuối: link Link4M (user bấm vào đây)
+  return link4mLink;
+}
+
+/* ═══ PROGRESS UI CHO BƯỚC TẠO LINK ═══ */
+function updateLinkProgress(step, state) {
+  const row = document.getElementById('lp' + step);
+  const icon = document.getElementById('lp' + step + 'i');
+  if (!row || !icon) return;
+
+  row.className = 'lp-row ' + state;
+  if (state === 'active') {
+    icon.innerHTML = '<div class="lp-spin"></div>';
+  } else if (state === 'done') {
+    icon.textContent = '✅';
+  } else if (state === 'fail') {
+    icon.textContent = '❌';
+  } else {
+    icon.textContent = '⏳';
   }
 }
 
@@ -532,10 +620,16 @@ async function createShortLink(){
 async function startFlow(){
   const btn = document.getElementById('btnGet');
   btn.disabled = true;
-  btn.innerHTML = '⏳ Đang gọi API tạo link mới...';
-  setStatus('loading','Đang tạo phiên lấy key MỚI...');
+  btn.innerHTML = '⏳ Đang tạo link 2 lớp...';
+  setStatus('loading','Đang tạo link xác minh 2 lớp (Layma → Link4M)...');
 
-  try{
+  // Hiện progress bar
+  const progressEl = document.getElementById('linkProgress');
+  progressEl.classList.add('show');
+  updateLinkProgress(1, 'active');
+  updateLinkProgress(2, 'pending');
+
+  try {
     LS.del('ff_key');
     LS.del('ff_tok');
     LS.del('ff_tok_ts');
@@ -549,35 +643,38 @@ async function startFlow(){
     LS.set('ff_tok', tok);
     LS.set('ff_tok_ts', String(Date.now()));
 
-    const shortLink = await createShortLink();
-    LS.set('ff_short', shortLink);
+    // ★ Tạo double-layer link
+    const finalLink = await createDoubleLayerLink();
+    LS.set('ff_short', finalLink);
 
-    showLinkBox(shortLink);
+    progressEl.classList.remove('show');
+    showLinkBox(finalLink);
     clearStatus();
     btn.innerHTML = '⚡ Lấy Key Free Fire Miễn Phí';
 
-  }catch(e){
-    setStatus('error','Lỗi: '+e.message);
+  } catch(e) {
+    progressEl.classList.remove('show');
+    setStatus('error','Lỗi: ' + e.message);
     btn.disabled = false;
     btn.innerHTML = '⚡ Lấy Key Free Fire Miễn Phí';
-    LS.del('ff_tok');LS.del('ff_tok_ts');
+    LS.del('ff_tok'); LS.del('ff_tok_ts');
   }
 }
 
 function showLinkBox(link){
-  document.getElementById('btnGet').style.display='none';
-  document.getElementById('stepsPanel').style.display='none';
+  document.getElementById('btnGet').style.display = 'none';
+  document.getElementById('stepsPanel').style.display = 'none';
 
   const lb = document.getElementById('linkBox');
   document.getElementById('linkText').textContent = link;
   document.getElementById('linkOpenBtn').href = link;
   lb.classList.add('show');
 
-  setStatus('info','Link MỚI đã được tạo. Bấm nút để mở xác minh ↓');
+  setStatus('info','Link 2 lớp đã sẵn sàng. Bấm nút để mở xác minh Link4M → Layma ↓');
 }
 
 function onOpenLink(){
-  setStatus('loading','Đang chờ bạn hoàn thành xác minh... Key MỚI sẽ tự hiện tại tab này.');
+  setStatus('loading','Đang chờ bạn hoàn thành xác minh 2 lớp... Key sẽ tự hiện tại tab này.');
   startKeyPolling();
 }
 
@@ -586,12 +683,11 @@ let pollTimeout = null;
 function startKeyPolling(){
   clearInterval(pollInt);
   clearTimeout(pollTimeout);
-
   const currentSession = LS.get('ff_session');
 
   pollInt = setInterval(()=>{
     const stored = loadValidKey();
-    if(stored && stored.deviceID === getDeviceID() && stored.sessionID === currentSession && !stored.used){
+    if(stored && stored.deviceID===getDeviceID() && stored.sessionID===currentSession && !stored.used){
       clearInterval(pollInt);
       clearTimeout(pollTimeout);
       showKeyUI(stored.key, stored.exp);
@@ -619,8 +715,8 @@ function showKeyUI(key, exp){
   document.getElementById('getPanel').style.display = 'none';
 
   const keyInner = document.getElementById('keyInner');
-  const keyText = document.getElementById('keyText');
-  const useBtn = document.getElementById('useBtn');
+  const keyText  = document.getElementById('keyText');
+  const useBtn   = document.getElementById('useBtn');
 
   if(isUsed){
     keyInner.classList.add('used');
@@ -629,7 +725,7 @@ function showKeyUI(key, exp){
     useBtn.textContent = '✗ Đã sử dụng';
     useBtn.disabled = true;
     setStatus('warning','⚠️ Key này đã được đánh dấu là đã sử dụng. Bạn có thể bấm "Lấy key mới" bên dưới.');
-  }else{
+  } else {
     keyInner.classList.remove('used');
     keyText.classList.remove('used');
     useBtn.classList.remove('used');
@@ -642,31 +738,21 @@ function showKeyUI(key, exp){
   startTimer(exp);
 }
 
-/* ═══ SỬ DỤNG KEY ═══ */
 function useKey(){
   const stored = loadValidKey();
-  if(!stored){
-    setStatus('error','Không tìm thấy key.');
-    return;
-  }
-
-  if(stored.used){
-    setStatus('warning','Key này đã được đánh dấu là đã sử dụng rồi.');
-    return;
-  }
+  if(!stored){ setStatus('error','Không tìm thấy key.'); return; }
+  if(stored.used){ setStatus('warning','Key này đã được đánh dấu là đã sử dụng rồi.'); return; }
 
   markKeyAsUsed();
 
   const keyInner = document.getElementById('keyInner');
-  const keyText = document.getElementById('keyText');
-  const useBtn = document.getElementById('useBtn');
-
+  const keyText  = document.getElementById('keyText');
+  const useBtn   = document.getElementById('useBtn');
   keyInner.classList.add('used');
   keyText.classList.add('used');
   useBtn.classList.add('used');
   useBtn.textContent = '✗ Đã sử dụng';
   useBtn.disabled = true;
-
   setStatus('success','✅ Key đã được đánh dấu là đã sử dụng. Bạn có thể bấm "🔄 Lấy key mới" nếu cần thêm.');
 }
 
@@ -684,7 +770,7 @@ function startTimer(exp){
       setTimeout(resetFlow, 2000);
       return;
     }
-    const h = Math.floor(d/3600000), m = Math.floor((d%3600000)/60000), s = Math.floor((d%60000)/1000);
+    const h=Math.floor(d/3600000), m=Math.floor((d%3600000)/60000), s=Math.floor((d%60000)/1000);
     el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
   }
   tick();
@@ -694,7 +780,7 @@ const pad = n => String(n).padStart(2,'0');
 
 function copyKey(){
   const key = document.getElementById('keyText').textContent;
-  if(!key || key === '—') return;
+  if(!key || key==='—') return;
   navigator.clipboard.writeText(key).then(()=>{
     const b = document.getElementById('copyBtn');
     b.textContent = '✓ Copied';
@@ -703,47 +789,31 @@ function copyKey(){
   });
 }
 
-/* ═══ ★★★ HÀM MỚI: SAO CHÉP KEY TRONG KAPOWWSS PAGE ★★★ ═══ */
 function copyKapowKey(){
   const key = document.getElementById('kapowKeyText').textContent;
-  if(!key || key === '—'){
-    alert('Không có key để sao chép!');
-    return;
-  }
-  
+  if(!key || key==='—'){ alert('Không có key để sao chép!'); return; }
   const btn = document.getElementById('kapowCopyBtn');
-  
   navigator.clipboard.writeText(key).then(()=>{
-    // Hiệu ứng thành công
-    const originalText = btn.innerHTML;
+    const orig = btn.innerHTML;
     btn.innerHTML = '✅ Đã sao chép!';
     btn.classList.add('copied');
-    
-    setTimeout(()=>{
-      btn.innerHTML = originalText;
-      btn.classList.remove('copied');
-    }, 2000);
-  }).catch(err => {
-    // Fallback cho trình duyệt cũ
-    const textarea = document.createElement('textarea');
-    textarea.value = key;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
+    setTimeout(()=>{ btn.innerHTML=orig; btn.classList.remove('copied'); }, 2000);
+  }).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = key;
+    ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
     try {
       document.execCommand('copy');
-      const originalText = btn.innerHTML;
+      const orig = btn.innerHTML;
       btn.innerHTML = '✅ Đã sao chép!';
       btn.classList.add('copied');
-      setTimeout(()=>{
-        btn.innerHTML = originalText;
-        btn.classList.remove('copied');
-      }, 2000);
-    } catch (e) {
+      setTimeout(()=>{ btn.innerHTML=orig; btn.classList.remove('copied'); }, 2000);
+    } catch(e) {
       alert('Không thể sao chép. Vui lòng chọn key và copy thủ công.');
     }
-    document.body.removeChild(textarea);
+    document.body.removeChild(ta);
   });
 }
 
@@ -752,11 +822,8 @@ function resetFlow(){
   clearInterval(pollInt);
   clearTimeout(pollTimeout);
 
-  LS.del('ff_key');
-  LS.del('ff_tok');
-  LS.del('ff_tok_ts');
-  LS.del('ff_short');
-  LS.del('ff_session');
+  LS.del('ff_key'); LS.del('ff_tok'); LS.del('ff_tok_ts');
+  LS.del('ff_short'); LS.del('ff_session');
 
   document.getElementById('keyBox').classList.remove('show');
   document.getElementById('timerBar').classList.remove('show');
@@ -768,6 +835,7 @@ function resetFlow(){
   document.getElementById('btnGet').disabled = false;
   document.getElementById('btnGet').innerHTML = '⚡ Lấy Key Free Fire Miễn Phí';
   document.getElementById('linkBox').classList.remove('show');
+  document.getElementById('linkProgress').classList.remove('show');
   clearStatus();
 }
 
@@ -776,12 +844,12 @@ async function handleKapowwssPage(){
   document.getElementById('mainPage').style.display = 'none';
   document.getElementById('kapowPage').classList.add('show');
 
-  const icon = document.getElementById('kapowIcon');
+  const icon  = document.getElementById('kapowIcon');
   const title = document.getElementById('kapowTitle');
-  const sub = document.getElementById('kapowSub');
-  const keyBox = document.getElementById('kapowKeyBox');
+  const sub   = document.getElementById('kapowSub');
+  const keyBox  = document.getElementById('kapowKeyBox');
   const keyText = document.getElementById('kapowKeyText');
-  const note = document.getElementById('kapowNote');
+  const note    = document.getElementById('kapowNote');
 
   const tok = LS.get('ff_tok');
   const tokTs = parseInt(LS.get('ff_tok_ts')||'0', 10);
@@ -812,21 +880,22 @@ async function handleKapowwssPage(){
     icon.textContent = '❌';
     title.textContent = 'Xác minh không hợp lệ';
     title.style.color = 'var(--re)';
-    sub.innerHTML = 'Vui lòng hoàn thành <strong>toàn bộ quảng cáo</strong> trên Link4M.<br>Không được bỏ qua hoặc tải lại trang.';
-    LS.del('ff_tok');LS.del('ff_tok_ts');
+    sub.innerHTML = 'Vui lòng hoàn thành <strong>toàn bộ quảng cáo</strong> trên Link4M + Layma.<br>Không được bỏ qua hoặc tải lại trang.';
+    LS.del('ff_tok'); LS.del('ff_tok_ts');
     note.innerHTML = '<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Thử lại từ đầu</a>';
     return;
   }
 
   const ref = document.referrer || '';
-  const isFromLink4m = ref.includes('link4m');
+  // Chấp nhận redirect từ link4m hoặc layma
+  const isFromVerifier = ref.includes('link4m') || ref.includes('layma.net') || ref.includes('layma');
 
-  if(!isFromLink4m && elapsed < 30_000){
+  if(!isFromVerifier && elapsed < 30_000){
     icon.textContent = '❌';
     title.textContent = 'Truy cập không hợp lệ';
     title.style.color = 'var(--re)';
-    sub.innerHTML = 'Trang này chỉ dành cho redirect từ Link4M.<br>Vui lòng bấm link xác minh từ trang chính.';
-    LS.del('ff_tok');LS.del('ff_tok_ts');
+    sub.innerHTML = 'Trang này chỉ dành cho redirect từ Link4M / Layma.<br>Vui lòng bấm link xác minh từ trang chính.';
+    LS.del('ff_tok'); LS.del('ff_tok_ts');
     note.innerHTML = '<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
     return;
   }
@@ -835,16 +904,14 @@ async function handleKapowwssPage(){
   title.textContent = 'Đang tạo key MỚI...';
   sub.textContent = 'Vui lòng đợi vài giây';
 
-  try{
+  try {
     const did = getDeviceID();
     const key = await genKey(did, sessionID);
-    
-    // ★★★ LƯU KEY VÀO FIREBASE ★★★
+
+    // ★ Lưu key vào Firebase
     saveKey(key, sessionID);
 
-    LS.del('ff_tok');
-    LS.del('ff_tok_ts');
-    LS.del('ff_short');
+    LS.del('ff_tok'); LS.del('ff_tok_ts'); LS.del('ff_short');
 
     icon.textContent = '✅';
     title.textContent = 'Xác minh thành công!';
@@ -855,12 +922,12 @@ async function handleKapowwssPage(){
 
     note.innerHTML = '<strong>Quay lại tab chính</strong> để xem và copy key.<br><br><a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
 
-  }catch(e){
+  } catch(e) {
     icon.textContent = '❌';
     title.textContent = 'Lỗi tạo key';
     title.style.color = 'var(--re)';
     sub.textContent = 'Đã xảy ra lỗi: ' + e.message;
-    LS.del('ff_tok');LS.del('ff_tok_ts');
+    LS.del('ff_tok'); LS.del('ff_tok_ts');
     note.innerHTML = '<a class="kapowwss-back-btn" href="'+CFG.BASE_URL+'">← Quay về trang chính</a>';
   }
 }
@@ -878,7 +945,7 @@ async function handleKapowwssPage(){
   const stored = loadValidKey();
   const currentSession = LS.get('ff_session');
 
-  if(stored && stored.deviceID === getDeviceID() && stored.sessionID && stored.sessionID === currentSession){
+  if(stored && stored.deviceID===getDeviceID() && stored.sessionID && stored.sessionID===currentSession){
     showKeyUI(stored.key, stored.exp);
     return;
   }
@@ -888,9 +955,7 @@ async function handleKapowwssPage(){
   }
 
   if(!currentSession){
-    LS.del('ff_tok');
-    LS.del('ff_tok_ts');
-    LS.del('ff_short');
+    LS.del('ff_tok'); LS.del('ff_tok_ts'); LS.del('ff_short');
   }
 
   document.getElementById('mainPage').style.display = 'block';
@@ -900,7 +965,7 @@ async function handleKapowwssPage(){
 /* ═══ PARTICLES ═══ */
 (function(){
   const c = document.getElementById('pts');
-  for(let i = 0; i < 25; i++){
+  for(let i=0;i<25;i++){
     const p = document.createElement('div');
     p.className = 'pt';
     p.style.cssText = [`left:${Math.random()*100}%`,`width:${Math.random()>.7?3:2}px`,
@@ -912,11 +977,10 @@ async function handleKapowwssPage(){
 })();
 
 document.addEventListener('keydown', e => {
-  if(e.key === 'F12' || (e.ctrlKey && e.shiftKey && 'IJC'.includes(e.key)) || (e.ctrlKey && e.key === 'U'))
+  if(e.key==='F12' || (e.ctrlKey&&e.shiftKey&&'IJC'.includes(e.key)) || (e.ctrlKey&&e.key==='U'))
     e.preventDefault();
 });
 document.addEventListener('contextmenu', e => e.preventDefault());
 </script>
-
 </body>
 </html>
